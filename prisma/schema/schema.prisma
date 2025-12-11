@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+    TOURIST
+    HOST
+    ADMIN
+    SUPER_ADMIN
+}
+
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+    DELETED
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
+
+model User {
+   id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  role         UserRole     @default(TOURIST)
+  bio          String? 
+  profileImage String?
+  isPremium    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+    @@map("users")
+}
