@@ -1,27 +1,42 @@
-import { prisma } from "../../../shared/prisma";
+import bcrypt from "bcryptjs";
+import prisma from "../../../shared/prisma";
 
-interface CreateUserPayload {
+type CreateUserPayload = {
   name: string;
   email: string;
   password: string;
-}
+};
 
 const createUser = async (payload: CreateUserPayload) => {
-  const exist = await prisma.user.findUnique({
+
+  const isExist = await prisma.user.findUnique({
     where: { email: payload.email },
   });
 
-  if (exist) {
+  if (isExist) {
     throw new Error("User already exists");
   }
 
-  const result = await prisma.user.create({
-    data: payload,
+  const hashedPassword = await bcrypt.hash(payload.password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      name: payload.name,
+      email: payload.email,
+      password: hashedPassword,
+      role: "TOURIST",
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
   });
 
-  return result;
+  return user;
 };
 
-export const UserServices = {
+export const UserService = {
   createUser,
 };

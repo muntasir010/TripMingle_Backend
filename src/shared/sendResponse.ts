@@ -1,13 +1,16 @@
-import { Response } from "express";
+import { Response } from 'express';
 
-interface IApiResponse<T> {
+type TResponse<T> = {
   statusCode: number;
   success: boolean;
-  message?: string;
+  message: string;
   data?: T;
-}
+};
 
-const sendResponse = <T>(res: Response, payload: IApiResponse<T>) => {
+const sendResponse = <T>(
+  res: Response,
+  payload: TResponse<T>
+): void => {
   res.status(payload.statusCode).json({
     success: payload.success,
     message: payload.message,
