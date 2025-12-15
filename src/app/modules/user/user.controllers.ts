@@ -3,7 +3,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { Request, Response } from "express";
 import { UserService } from "./user.service";
 
-const createUser = catchAsync(async (req: Request, res: Response) => {
+const createUser = catchAsync(async (req, res) => {
   const result = await UserService.createUser(req.body);
 
   sendResponse(res, {
