@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import prisma from "../../../shared/prisma";
+import AppError from "../../../shared/AppError";
 
 type CreateUserPayload = {
   name: string;
@@ -14,7 +15,7 @@ const createUser = async (payload: CreateUserPayload) => {
   });
 
   if (isExist) {
-    throw new Error("User already exists");
+    throw new AppError(409, "User already exists");
   }
 
   const hashedPassword = await bcrypt.hash(payload.password, 12);

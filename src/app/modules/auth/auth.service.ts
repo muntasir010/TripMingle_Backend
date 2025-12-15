@@ -3,6 +3,7 @@ import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import type { StringValue } from "ms";
 import bcrypt from "bcryptjs";
 import prisma from "../../../shared/prisma";
+import AppError from "../../../shared/AppError";
 
 type LoginPayload = {
   email: string;
@@ -17,12 +18,12 @@ const loginUser = async (payload: LoginPayload) => {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError( 404, "User not found");
   }
 
   const isPasswordMatch = await bcrypt.compare(password, user.password);
   if (!isPasswordMatch) {
-    throw new Error("Invalid credentials");
+    throw new AppError(401, "Invalid credentials");
   }
 
   const jwtSecret: Secret = config.jwt_secret as string;
