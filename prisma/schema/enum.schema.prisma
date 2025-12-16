@@ -1,0 +1,18 @@
+
+enum UserRole {
+    TOURIST
+    HOST
+    ADMIN
+    SUPER_ADMIN
+}
+
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+    DELETED
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
