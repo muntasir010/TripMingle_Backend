@@ -4,6 +4,7 @@ model User {
   name         String
   email        String   @unique
   password     String
+  needPasswordChange Boolean  @default(false)
   role         UserRole @default(TOURIST)
 
   profilePhoto String?
