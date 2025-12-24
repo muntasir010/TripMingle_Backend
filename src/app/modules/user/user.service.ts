@@ -1,43 +1,45 @@
+import { Request } from "express";
 import bcrypt from "bcryptjs";
 import prisma from "../../../shared/prisma";
-import AppError from "../../../shared/AppError";
+import { fileUploader } from "../../helper/fileUploader";
 
-type CreateUserPayload = {
-  name: string;
-  email: string;
-  password: string;
-};
-
-const createUser = async (payload: CreateUserPayload) => {
-
-  const isExist = await prisma.user.findUnique({
-    where: { email: payload.email },
-  });
-
-  if (isExist) {
-    throw new AppError(409, "User already exists");
+const createTourist = async (req: Request) => {
+  if (req.file) {
+    const uploadResult = await fileUploader.uploadCloudinary(req.file);
+    req.body.tourist.profilePhoto = uploadResult?.secure_url;
   }
 
-  const hashedPassword = await bcrypt.hash(payload.password, 12);
+  const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
-  const user = await prisma.user.create({
-    data: {
-      name: payload.name,
-      email: payload.email,
-      password: hashedPassword,
-      role: "TOURIST",
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
+  const result = await prisma.$transaction(async (tnx) => {
+    // 1. create user
+    const user = await tnx.user.create({
+      data: {
+        name: req.body.tourist.name,
+        email: req.body.tourist.email,
+        password: hashedPassword,
+        role: "TOURIST",
+        profilePhoto: req.body.tourist.profilePhoto,
+      },
+    });
+
+    // 2. create tourist (ONLY schema fields)
+    const tourist = await tnx.tourist.create({
+      data: {
+        userId: user.id,
+        phone: req.body.tourist?.phone ?? null,
+        country: req.body.tourist?.country ?? null,
+        bio: req.body.tourist?.bio ?? null,
+      },
+    });
+
+    return { user, tourist };
   });
 
-  return user;
+  return result;
 };
 
+
 export const UserService = {
-  createUser,
+  createTourist,
 };

@@ -5,10 +5,14 @@ import bcrypt from "bcryptjs";
 import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
 
+
+
 type LoginPayload = {
   email: string;
   password: string;
 };
+
+
 
 const loginUser = async (payload: LoginPayload) => {
   const { email, password } = payload;
@@ -54,5 +58,5 @@ const loginUser = async (payload: LoginPayload) => {
 };
 
 export const AuthService = {
-  loginUser,
+  loginUser
 };

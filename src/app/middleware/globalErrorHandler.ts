@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import AppError from "../../shared/AppError";
 
 const globalErrorHandler = (
-  error: any,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
@@ -10,15 +10,19 @@ const globalErrorHandler = (
   let statusCode = 500;
   let message = "Something went wrong";
 
-  if (error instanceof AppError) {
-    statusCode = error.statusCode;
-    message = error.message;
+  if (err instanceof AppError) {
+    statusCode = err.statusCode;
+    message = err.message;
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    error: error instanceof AppError ? undefined : error,
+    error: {
+      ...(process.env.NODE_ENV === "development" && {
+        stack: err.stack,
+      }),
+    },
   });
 };
 
