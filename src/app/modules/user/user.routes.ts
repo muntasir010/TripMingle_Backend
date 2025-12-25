@@ -6,6 +6,8 @@ import AppError from "../../../shared/AppError";
 
 const router = express.Router();
 
+router.get("/", UserController.getAllFromDB)
+
 router.post(
   "/register",
   fileUploader.upload.single("file"),
