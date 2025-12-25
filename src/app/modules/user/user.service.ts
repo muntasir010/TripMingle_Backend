@@ -50,7 +50,7 @@ const createTourist = async (req: Request) => {
   return result;
 };
 
-const getAllFromDB= async({ page, limit, searchTerm, sortBy, sortOrder }: { page: number, limit: number, searchTerm?:any, sortBy: any, sortOrder: any, })=>{
+const getAllFromDB= async({ page, limit, searchTerm, sortBy, sortOrder, status, role }: { page: number, limit: number, searchTerm?:any, sortBy: any, sortOrder: any, status: any, role:any })=>{
   const pageNumber = page || 1;
   const limitNumber = limit || 20;
   const skip = (pageNumber - 1) * limitNumber; 
@@ -62,7 +62,10 @@ const getAllFromDB= async({ page, limit, searchTerm, sortBy, sortOrder }: { page
       email: {
         contains: searchTerm,
         mode: 'insensitive',
-      }
+      },
+      role: role,
+      isDeleted: false,
+
     },
     orderBy: sortBy && sortOrder ? {
       [sortBy]: sortOrder,
