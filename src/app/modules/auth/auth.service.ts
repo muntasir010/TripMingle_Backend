@@ -1,9 +1,8 @@
-// import jwtPayload  from 'jsonwebtoken';
 import config from "../../../config";
 import bcrypt from "bcryptjs";
 import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
-import { generateToken } from "../../helper/jwtHelper";
+import { jwtHelper } from "../../helper/jwtHelper";
 
 type LoginPayload = {
   email: string;
@@ -28,7 +27,7 @@ const loginUser = async (payload: LoginPayload) => {
     throw new AppError(401, "Invalid credentials");
   }
 
- const accessToken = generateToken(
+ const accessToken = jwtHelper.generateToken(
   {
     userId: user.id,
     role: user.role,
@@ -38,7 +37,7 @@ const loginUser = async (payload: LoginPayload) => {
   config.jwt_access_expires_in
 );
 
-const refreshToken = generateToken(
+const refreshToken = jwtHelper.generateToken(
   {
     userId: user.id,
   },

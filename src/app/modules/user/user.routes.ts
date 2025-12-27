@@ -3,10 +3,12 @@ import { UserController } from "./user.controllers";
 import { fileUploader } from "../../helper/fileUploader";
 import { UserValidation } from "./user.validation";
 import AppError from "../../../shared/AppError";
+import auth from "../../middleware/auth";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
-router.get("/", UserController.getAllFromDB)
+router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB)
 
 router.post(
   "/register",
@@ -24,13 +26,5 @@ router.post(
   }
 );
 
-// router.post(
-//   "/register",
-//   fileUploader.upload.single("file"),
-//   (req, res, next) => {
-//     // console.log("req.file:", req.file);
-//     UserController.createTourist(req, res, next);
-//   }
-// );
 
 export const UserRoutes = router;
