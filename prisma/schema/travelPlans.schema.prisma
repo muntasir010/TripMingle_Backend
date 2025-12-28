@@ -1,0 +1,17 @@
+model TravelPlan {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  budget      Int
+  travelType  String
+  description String?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("travel_plans")
+}
