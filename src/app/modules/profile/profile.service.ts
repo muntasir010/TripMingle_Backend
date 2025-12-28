@@ -26,8 +26,44 @@ const createProfile = async (userId: number, payload: any) => {
   return profile;
 };
 
+const getPublicProfile = async (userId: number) => {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          profilePhoto: true,
+          isPremium: true,
+        },
+      },
+    },
+  });
 
+  if (!profile) {
+    throw new AppError(httpStatus.NOT_FOUND, "Profile not found");
+  }
+
+  return {
+    userId: profile.user.id,
+    name: profile.user.name,
+    role: profile.user.role,
+    profilePhoto: profile.user.profilePhoto,
+    isPremium: profile.user.isPremium,
+    bio: profile.bio,
+    interests: profile.interests,
+    visitedCountries: profile.visitedCountries,
+    location: profile.location,
+    social: {
+      facebook: profile.facebook,
+      instagram: profile.instagram,
+    },
+  };
+};
 
 export const ProfileService = {
   createProfile,
+  getPublicProfile,
 };

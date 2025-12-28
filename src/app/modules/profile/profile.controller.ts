@@ -15,8 +15,20 @@ const createProfile = catchAsync(async (req, res) => {
   });
 });
 
+const getPublicProfile = catchAsync(async (req, res) => {
+  const userId = Number(req.params.userId);
 
+  const result = await ProfileService.getPublicProfile(userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Public profile fetched successfully",
+    data: result,
+  });
+});
 
 export const ProfileController = {
   createProfile,
+  getPublicProfile,
 };
