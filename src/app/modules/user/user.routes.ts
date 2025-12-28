@@ -8,10 +8,26 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
-router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB)
+router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB);
 
 router.post(
-  "/register",
+  "/create-admin",
+  fileUploader.upload.single("file"),
+  UserController.createAdmin
+);
+
+// router.post(
+//     "/create-admin",
+//     auth(),
+//     fileUploader.upload.single('file'),
+//     (req: Request, res: Response, next: NextFunction) => {
+//         req.body = UserValidation.createAdmin.parse(JSON.parse(req.body.data))
+//         return UserController.createAdmin(req, res, next)
+//     }
+// );
+
+router.post(
+  "/create-tourist",
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     if (!req.body?.data) {
@@ -25,6 +41,5 @@ router.post(
     return UserController.createTourist(req, res, next);
   }
 );
-
 
 export const UserRoutes = router;
