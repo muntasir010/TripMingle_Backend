@@ -8,142 +8,6 @@ import { paginationHelper } from "../../helper/paginationHelper";
 import { Prisma } from "@prisma/client";
 import { userSearchableFields } from "./user.constant";
 
-// const createAdmin = async (req: Request) => {
-//   const { admin } = req.body;
-//   const isExist = await prisma.user.findUnique({
-//     where: { email: admin.email },
-//   });
-
-//   if (isExist) {
-//     throw new AppError(httpStatus.CONFLICT, "User already exists");
-//   }
-
-//   if (req.file) {
-//     const uploadResult = await fileUploader.uploadCloudinary(req.file);
-//     req.body.admin.profilePhoto = uploadResult?.secure_url;
-//   }
-
-//   const hashedPassword = await bcrypt.hash(req.body.password, 12);
-
-//   const result = await prisma.$transaction(async (tx) => {
-//     const user = await tx.user.create({
-//       data: {
-//         // name: req.name,
-//         // email: payload.email,
-//         // password: hashedPassword,
-//         // role: "ADMIN",
-//         name: req.body.admin.name,
-//         email: req.body.admin.email,
-//         password: hashedPassword,
-//         role: "ADMIN",
-//         profilePhoto: req.body.admin.profilePhoto,
-//       },
-//     });
-
-//     const admin = await tx.admin.create({
-//       data: {
-//         userId: user.id,
-//         phone: req.body.tourist?.phone ?? null,
-//         country: req.body.tourist?.country ?? null,
-//         bio: req.body.tourist?.bio ?? null,
-//       },
-//     });
-
-//     return { user, admin };
-//   });
-
-//   return result;
-// };
-
-// const createAdmin = async (req: Request) => {
-//   const { admin } = req.body;
-
-//   const isUserExists = await prisma.user.findUnique({
-//     where: { email: admin.email },
-//   });
-
-//   if (isUserExists) {
-//     throw new AppError(400, "Email already exists");
-//   }
-
-//   if (req.file) {
-//     const uploadResult = await fileUploader.uploadCloudinary(req.file);
-//     req.body.tourist.profilePhoto = uploadResult?.secure_url;
-//   }
-
-//   const hashedPassword = await bcrypt.hash(req.body.password, 12);
-
-//   const result = await prisma.$transaction(async (tnx) => {
-//     // 1. create user
-//     const user = await tnx.user.create({
-//       data: {
-//         name: req.body.admin.name,
-//         email: req.body.admin.email,
-//         password: hashedPassword,
-//         role: "ADMIN",
-//         profilePhoto: req.body.admin.profilePhoto,
-//       },
-//     });
-
-//     // 2. create tourist (ONLY schema fields)
-//     const admin = await tnx.admin.create({
-//       data: {
-//         userId: user.id,
-//         phone: req.body.admin?.phone ?? null,
-//       },
-//     });
-
-//     return { user, admin };
-//   });
-
-//   return result;
-// };
-
-// const createAdmin = async (req: Request) => {
-//   if (!req.body?.admin) {
-//   throw new AppError(400, "Admin data is required");
-// }
-//   const { admin } = req.body;
-
-//   const isExist = await prisma.user.findUnique({
-//     where: { email: admin.email },
-//   });
-
-//   if (isExist) {
-//     throw new AppError(httpStatus.CONFLICT, "User already exists");
-//   }
-
-//   if (req.file) {
-//     const uploadResult = await fileUploader.uploadCloudinary(req.file);
-//     admin.profilePhoto = uploadResult?.secure_url;
-//   }
-
-//   const hashedPassword = await bcrypt.hash(admin.password, 12);
-
-//   const result = await prisma.$transaction(async (tx) => {
-//     const user = await tx.user.create({
-//       data: {
-//         name: admin.name,
-//         email: admin.email,
-//         password: hashedPassword,
-//         role: "ADMIN",
-//         profilePhoto: admin.profilePhoto,
-//       },
-//     });
-
-//     const adminData = await tx.admin.create({
-//       data: {
-//         userId: user.id,
-//       },
-//     });
-
-//     return { user, admin: adminData };
-//   });
-
-//   return result;
-// };
-
-
 const createAdmin = async (req: Request) => {
   const { admin, password } = req.body;
 
@@ -190,6 +54,59 @@ const createAdmin = async (req: Request) => {
 };
 
 
+const createHost = async (req: any) => {
+  const { host, password } = req.body;
+
+  if (!host || !password) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Host data & password are required"
+    );
+  }
+
+  // 1. user already exists?
+  const isExist = await prisma.user.findUnique({
+    where: { email: host.email },
+  });
+
+  if (isExist) {
+    throw new AppError(httpStatus.CONFLICT, "User already exists");
+  }
+
+  // 2. image upload (optional)
+  if (req.file) {
+    const uploadResult = await fileUploader.uploadCloudinary(req.file);
+    host.profilePhoto = uploadResult?.secure_url;
+  }
+
+  // 3. password hash
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  // 4. transaction
+  const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        name: host.name,
+        email: host.email,
+        password: hashedPassword,
+        role: "HOST",
+        profilePhoto: host.profilePhoto,
+      },
+    });
+
+    const hostData = await tx.host.create({
+      data: {
+        userId: user.id,
+        phone: host.phone ?? null,
+        address: host.address ?? null,
+      },
+    });
+
+    return { user, host: hostData };
+  });
+
+  return result;
+};
 
 const createTourist = async (req: Request) => {
   const { tourist } = req.body;
@@ -301,6 +218,7 @@ const getAllFromDB = async (params: any, options: any) => {
 
 export const UserService = {
   createTourist,
+  createHost,
   createAdmin,
   getAllFromDB,
 };

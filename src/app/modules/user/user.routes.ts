@@ -15,6 +15,11 @@ router.post(
   fileUploader.upload.single("file"),
   UserController.createAdmin
 );
+router.post(
+  "/create-host",
+  fileUploader.upload.single("file"),
+  UserController.createHost
+);
 
 // router.post(
 //     "/create-admin",
