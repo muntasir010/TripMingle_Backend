@@ -21,7 +21,7 @@ const sendRequest = async (userId: number, payload: SendRequestPayload) => {
     throw new AppError(404, "Travel plan not found");
   }
 
-  // 3️⃣ Host বের করা
+  // 3️⃣ Host
   const host = await prisma.host.findUnique({
     where: { id: travelPlan.hostId },
   });
@@ -47,7 +47,7 @@ const sendRequest = async (userId: number, payload: SendRequestPayload) => {
     data: {
       requesterId: userId,
       travelPlanId: travelPlan.id,
-      status: "PENDING", // default
+      status: "PENDING",
     },
   });
 

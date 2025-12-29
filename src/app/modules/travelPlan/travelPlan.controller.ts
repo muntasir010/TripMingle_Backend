@@ -1,0 +1,23 @@
+import { Request, Response } from "express";
+import catchAsync from "../../../shared/catchAsync";
+import sendResponse from "../../../shared/sendResponse";
+import { travelPlanService } from "./travelPlan.service";
+
+const createTravelPlan = {
+  createTravelPlan: catchAsync(
+    async (req: Request & { user?: any }, res: Response) => {
+      const result = await travelPlanService.createTravelPlan(req.user.userId, req.body);
+
+      sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Travel plan created successfully",
+        data: result,
+      });
+    }
+  ),
+};
+
+export const TravelPlanController = {
+    createTravelPlan,
+}
