@@ -1,26 +1,25 @@
-
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String
-  email        String   @unique
-  password     String
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  password           String
   needPasswordChange Boolean  @default(false)
-  role         UserRole @default(TOURIST)
+  role               UserRole @default(TOURIST)
 
   profilePhoto String?
-  isPremium    Boolean  @default(false)
-  isDeleted    Boolean  @default(false)
+  isPremium    Boolean @default(false)
+  isDeleted    Boolean @default(false)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  profile      UserProfile?
+  profile UserProfile?
 
-  admin    Admin?
-  host     Host?
-  tourist  Tourist?
+  admin   Admin?
+  host    Host?
+  tourist Tourist?
 
-   tourRequests TourRequest[]
+  travelRequest TravelRequest[]
 
   @@map("users")
 }
@@ -35,53 +34,52 @@ model UserProfile {
   facebook         String?
   instagram        String?
 
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Admin {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @unique
+  id     Int @id @default(autoincrement())
+  userId Int @unique
 
   phone        String?
   profilePhoto String?
 
-  isDeleted    Boolean  @default(false)
+  isDeleted Boolean @default(false)
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("admins")
 }
 
 model Host {
-  id          Int          @id @default(autoincrement())
-  userId      Int          @unique
-  user        User         @relation(fields: [userId], references: [id])
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
 
   travelPlans TravelPlan[]
 
-  phone       String?
-  address     String?
-  isVerified  Boolean      @default(false)
+  phone      String?
+  address    String?
+  isVerified Boolean @default(false)
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("hosts")
 }
 
-
 model Tourist {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
+  id     Int @id @default(autoincrement())
+  userId Int @unique
 
-  phone     String?
-  country   String?
-  bio       String?
+  phone   String?
+  country String?
+  bio     String?
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

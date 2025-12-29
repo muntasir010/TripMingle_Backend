@@ -8,17 +8,15 @@ model TravelPlan {
   description String?
   hostId      Int
 
-  host        Host          @relation(fields: [hostId], references: [id])
-  tourRequests TourRequest[] 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  host      Host     @relation(fields: [hostId], references: [id])
+  travelRequest TravelRequest [] 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("travel_plans")
 }
 
-
-
-model TourRequest {
+model TravelRequest {
   id           Int           @id @default(autoincrement())
   travelPlanId Int
   requesterId  Int
