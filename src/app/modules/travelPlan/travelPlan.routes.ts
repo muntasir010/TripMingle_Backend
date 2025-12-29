@@ -7,16 +7,33 @@ const router = Router();
 
 router.get("/", TravelPlanController.getPublicPlans);
 
+router.get(
+  "/host",
+  auth("HOST"),
+  TravelPlanController.getHostRequests
+);
+
+router.patch(
+  "/:id/approve",
+  auth("HOST"),
+  TravelPlanController.approveRequest
+);
+
+router.patch(
+  "/:id/reject",
+  auth("HOST"),
+  TravelPlanController.rejectRequest
+);
 router.post(
   "/send",
   auth("TOURIST", "HOST"),
-  TravelPlanController.sendRequest.sendRequest
+  TravelPlanController.sendRequest
 );
 
 router.post(
   "/",
   auth("HOST"),
-  TravelPlanController.createTravelPlan.createTravelPlan
+  TravelPlanController.createTravelPlan
 );
 
 export const travelPlansRoutes = router;

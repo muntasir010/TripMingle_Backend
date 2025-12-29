@@ -1,6 +1,7 @@
 import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
 import httpStatus from "http-status";
+import { RequestStatus } from "@prisma/client";
 
 type SendRequestPayload = {
   travelPlanId: number;
@@ -15,8 +16,7 @@ type CreateTravelPlanPayload = {
   description?: string;
 };
 
-
- const getPublicTravelPlans = async () => {
+const getPublicTravelPlans = async () => {
   const today = new Date();
 
   const plans = await prisma.travelPlan.findMany({
@@ -44,7 +44,6 @@ type CreateTravelPlanPayload = {
 
   return plans;
 };
-
 
 const sendRequest = async (userId: number, payload: SendRequestPayload) => {
   const travelPlanId = Number(payload.travelPlanId);
@@ -95,7 +94,72 @@ const sendRequest = async (userId: number, payload: SendRequestPayload) => {
   return travelRequest;
 };
 
- const createTravelPlan = async (
+const getRequestsForHost = async (hostUserId: number) => {
+  const host = await prisma.host.findUnique({
+    where: { userId: hostUserId },
+  });
+
+  if (!host) {
+    throw new AppError(httpStatus.FORBIDDEN, "You are not a host");
+  }
+
+  const requests = await prisma.travelRequest.findMany({
+    where: {
+      travelPlan: {
+        hostId: host.id,
+      },
+    },
+    include: {
+      requester: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
+      travelPlan: true,
+    },
+  });
+
+  return requests;
+};
+
+const updateRequestStatus = async (
+  hostUserId: number,
+  requestId: number,
+  status: RequestStatus
+) => {
+  const host = await prisma.host.findUnique({
+    where: { userId: hostUserId },
+  });
+
+  if (!host) {
+    throw new AppError(httpStatus.FORBIDDEN, "You are not a host");
+  }
+
+  const request = await prisma.travelRequest.findUnique({
+    where: { id: requestId },
+    include: {
+      travelPlan: true,
+    },
+  });
+
+  if (!request) {
+    throw new AppError(httpStatus.NOT_FOUND, "Request not found");
+  }
+
+  if (request.travelPlan.hostId !== host.id) {
+    throw new AppError(httpStatus.FORBIDDEN, "Not your travel plan");
+  }
+
+  const updated = await prisma.travelRequest.update({
+    where: { id: requestId },
+    data: { status },
+  });
+
+  return updated;
+};
+
+const createTravelPlan = async (
   userId: number,
   payload: CreateTravelPlanPayload
 ) => {
@@ -105,7 +169,10 @@ const sendRequest = async (userId: number, payload: SendRequestPayload) => {
   });
 
   if (!host) {
-    throw new AppError(httpStatus.FORBIDDEN, "Only host can create travel plan");
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Only host can create travel plan"
+    );
   }
 
   const travelPlan = await prisma.travelPlan.create({
@@ -124,7 +191,9 @@ const sendRequest = async (userId: number, payload: SendRequestPayload) => {
 };
 
 export const travelPlanService = {
-    sendRequest,
-    createTravelPlan,
-    getPublicTravelPlans,
+  sendRequest,
+  createTravelPlan,
+  getPublicTravelPlans,
+  getRequestsForHost,
+  updateRequestStatus
 };

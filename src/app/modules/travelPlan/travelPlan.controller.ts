@@ -3,20 +3,18 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { travelPlanService } from "./travelPlan.service";
 
-const getPublicPlans =  catchAsync(async (req: Request, res: Response) => {
-    const result = await travelPlanService.getPublicTravelPlans();
+const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
+  const result = await travelPlanService.getPublicTravelPlans();
 
-    sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: "Public travel plans fetched successfully",
-      data: result,
-    });
-  })
-;
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Public travel plans fetched successfully",
+    data: result,
+  });
+});
 
-const sendRequest = {
-  sendRequest: catchAsync(
+const sendRequest = catchAsync(
     async (req: Request & { user?: any }, res: Response) => {
       const result = await travelPlanService.sendRequest(
         req.user.userId,
@@ -30,11 +28,50 @@ const sendRequest = {
         data: result,
       });
     }
-  ),
-};
+  );
 
-const createTravelPlan = {
-  createTravelPlan: catchAsync(
+const getHostRequests = catchAsync(async (req: any, res: Response) => {
+  const result = await travelPlanService.getRequestsForHost(req.user.userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Tour requests fetched",
+    data: result,
+  });
+});
+
+const approveRequest = catchAsync(async (req: any, res: Response) => {
+  const result = await travelPlanService.updateRequestStatus(
+    req.user.userId,
+    Number(req.params.id),
+    "ACCEPTED"
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Tour request approved",
+    data: result,
+  });
+});
+
+const rejectRequest = catchAsync(async (req: any, res: Response) => {
+  const result = await travelPlanService.updateRequestStatus(
+    req.user.userId,
+    Number(req.params.id),
+    "REJECTED"
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Tour request rejected",
+    data: result,
+  });
+});
+
+const createTravelPlan = catchAsync(
     async (req: Request & { user?: any }, res: Response) => {
       const result = await travelPlanService.createTravelPlan(
         req.user.userId,
@@ -48,11 +85,13 @@ const createTravelPlan = {
         data: result,
       });
     }
-  ),
-};
+  );
 
 export const TravelPlanController = {
-    getPublicPlans,
+  getPublicPlans,
   createTravelPlan,
-    sendRequest,
+  sendRequest,
+  getHostRequests,
+  approveRequest,
+  rejectRequest,
 };
