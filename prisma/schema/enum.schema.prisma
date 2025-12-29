@@ -16,3 +16,9 @@ enum Gender {
     MALE
     FEMALE
 }
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

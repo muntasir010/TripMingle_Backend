@@ -15,11 +15,12 @@ model User {
   updatedAt    DateTime @updatedAt
 
   profile      UserProfile?
-  travelPlans  TravelPlan[]
 
   admin    Admin?
   host     Host?
   tourist  Tourist?
+
+   tourRequests TourRequest[]
 
   @@map("users")
 }
@@ -55,20 +56,22 @@ model Admin {
 }
 
 model Host {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @unique
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  user        User         @relation(fields: [userId], references: [id])
 
-  phone        String?
-  address      String?
-  isVerified   Boolean  @default(false)
+  travelPlans TravelPlan[]
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String?
+  address     String?
+  isVerified  Boolean      @default(false)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@map("hosts")
 }
+
 
 model Tourist {
   id        Int      @id @default(autoincrement())

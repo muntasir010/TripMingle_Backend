@@ -1,17 +1,33 @@
 model TravelPlan {
   id          Int      @id @default(autoincrement())
-  userId      Int
   destination String
   startDate   DateTime
   endDate     DateTime
   budget      Int
   travelType  String
   description String?
+  hostId      Int
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  host        Host          @relation(fields: [hostId], references: [id])
+  tourRequests TourRequest[] 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("travel_plans")
+}
+
+
+
+model TourRequest {
+  id           Int           @id @default(autoincrement())
+  travelPlanId Int
+  requesterId  Int
+  status       RequestStatus @default(PENDING)
+
+  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id])
+  requester  User       @relation(fields: [requesterId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([travelPlanId, requesterId])
 }
