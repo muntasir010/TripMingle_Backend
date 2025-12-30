@@ -13,7 +13,7 @@ type CreateTravelPlanPayload = {
 
 // createTravelPlan(hostUserId) ✅
 // getAllTravelPlans() ✅
-// getSingleTravelPlan(id)
+// getSingleTravelPlan(id)✅
 // getMyTravelPlans(hostUserId)
 // updateTravelPlan(id)
 // deleteTravelPlan(id)
@@ -47,6 +47,32 @@ const getPublicTravelPlans = async () => {
   return plans;
 };
 
+const getSingleTravelPlan = async (id: number) => {
+  const travelPlan = await prisma.travelPlan.findUnique({
+    where: { id },
+    include: {
+      host: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!travelPlan) {
+    throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
+  }
+
+  return travelPlan;
+};
+
 const createTravelPlan = async (
   userId: number,
   payload: CreateTravelPlanPayload
@@ -78,7 +104,10 @@ const createTravelPlan = async (
   return travelPlan;
 };
 
+
+
 export const travelPlanService = {
   createTravelPlan,
   getPublicTravelPlans,
+  getSingleTravelPlan,
 };

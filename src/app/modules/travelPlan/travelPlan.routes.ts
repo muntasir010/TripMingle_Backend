@@ -13,6 +13,8 @@ const router = Router();
 
 router.get("/", TravelPlanController.getPublicPlans);
 
+router.get("/:id", TravelPlanController.getSingleTravelPlan);
+
 router.post("/", auth("HOST"), TravelPlanController.createTravelPlan);
 
 export const travelPlansRoutes = router;

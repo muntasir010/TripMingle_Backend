@@ -1,7 +1,7 @@
-// POST   /tour-requests           (TOURIST)
-// GET    /tour-requests/host      (HOST)
-// PATCH  /tour-requests/:id/approve
-// PATCH  /tour-requests/:id/reject
+// POST   /travel-request           (TOURIST)
+// GET    /travel-request/host      (HOST)
+// PATCH  /travel-request/:id/approve
+// PATCH  /travel-request/:id/reject
 
 import { Router } from "express";
 import auth from "../../middleware/auth";
