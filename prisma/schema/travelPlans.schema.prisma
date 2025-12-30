@@ -18,8 +18,8 @@ model TravelPlan {
 
 model TravelRequest {
   id           Int           @id @default(autoincrement())
-  travelPlanId Int
   requesterId  Int
+  travelPlanId Int
   status       RequestStatus @default(PENDING)
 
   travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id])
