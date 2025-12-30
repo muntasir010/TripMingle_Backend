@@ -81,6 +81,20 @@ const updateTravelPlan = catchAsync(
   }
 );
 
+const deleteTravelPlan = catchAsync(async (req: Request & { user?: any }, res: Response) => {
+  const id = Number(req.params.id);
+  const hostUserId = req.user.userId;
+
+  await travelPlanService.deleteTravelPlan(id, hostUserId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Travel plan deleted successfully",
+    data: null,
+  });
+});
+
 
 export const TravelPlanController = {
   getPublicPlans,
@@ -88,4 +102,5 @@ export const TravelPlanController = {
   getMyTravelPlans,
   createTravelPlan,
   updateTravelPlan,
+  deleteTravelPlan
 };

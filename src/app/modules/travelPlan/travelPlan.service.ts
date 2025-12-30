@@ -160,6 +160,32 @@ const updateTravelPlan = async (
   return updatedPlan;
 };
 
+const deleteTravelPlan = async (id: number, hostUserId: number) => {
+  const travelPlan = await prisma.travelPlan.findUnique({
+    where: { id },
+    include: {
+      host: true,
+    },
+  });
+
+  if (!travelPlan) {
+    throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
+  }
+
+  if (travelPlan.host.userId !== hostUserId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not allowed to delete this travel plan"
+    );
+  }
+
+  await prisma.travelPlan.delete({
+    where: { id },
+  });
+
+  return null;
+};
+
 
 
 export const travelPlanService = {
@@ -168,4 +194,5 @@ export const travelPlanService = {
   getSingleTravelPlan,
   getMyTravelPlans,
   updateTravelPlan,
+  deleteTravelPlan
 };

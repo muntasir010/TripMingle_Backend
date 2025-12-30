@@ -73,7 +73,7 @@ const createHost = async (req: any) => {
     throw new AppError(httpStatus.CONFLICT, "User already exists");
   }
 
-  // 2. image upload (optional)
+  // 2. image upload 
   if (req.file) {
     const uploadResult = await fileUploader.uploadCloudinary(req.file);
     host.profilePhoto = uploadResult?.secure_url;

@@ -21,4 +21,6 @@ router.post("/", auth("HOST"), TravelPlanController.createTravelPlan);
 
 router.patch("/:id", auth("HOST"), TravelPlanController.updateTravelPlan);
 
+router.delete("/:id", auth("HOST"), TravelPlanController.deleteTravelPlan);
+
 export const travelPlansRoutes = router;
