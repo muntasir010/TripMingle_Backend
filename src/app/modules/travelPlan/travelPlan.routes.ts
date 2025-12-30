@@ -19,4 +19,6 @@ router.get("/:id", TravelPlanController.getSingleTravelPlan);
 
 router.post("/", auth("HOST"), TravelPlanController.createTravelPlan);
 
+router.patch("/:id", auth("HOST"), TravelPlanController.updateTravelPlan);
+
 export const travelPlansRoutes = router;

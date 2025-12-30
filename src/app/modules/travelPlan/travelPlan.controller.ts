@@ -60,10 +60,32 @@ const getMyTravelPlans = catchAsync(
   }
 );
 
+const updateTravelPlan = catchAsync(
+  async (req: Request & { user?: any }, res: Response) => {
+    const id = Number(req.params.id);
+    const hostUserId = req.user.userId;
+    const payload = req.body;
+
+    const result = await travelPlanService.updateTravelPlan(
+      id,
+      hostUserId,
+      payload
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Travel plan updated successfully",
+      data: result,
+    });
+  }
+);
+
 
 export const TravelPlanController = {
   getPublicPlans,
   getSingleTravelPlan,
   getMyTravelPlans,
   createTravelPlan,
+  updateTravelPlan,
 };

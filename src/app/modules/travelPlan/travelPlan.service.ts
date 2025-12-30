@@ -14,7 +14,7 @@ type CreateTravelPlanPayload = {
 // createTravelPlan(hostUserId) ✅
 // getAllTravelPlans() ✅
 // getSingleTravelPlan(id)✅
-// getMyTravelPlans(hostUserId)
+// getMyTravelPlans(hostUserId)✅
 // updateTravelPlan(id)
 // deleteTravelPlan(id)
 
@@ -117,6 +117,49 @@ const createTravelPlan = async (
   return travelPlan;
 };
 
+const updateTravelPlan = async (
+  id: number,
+  hostUserId: number,
+  payload: any
+) => {
+  const travelPlan = await prisma.travelPlan.findUnique({
+    where: { id },
+    include: {
+      host: true,
+    },
+  });
+
+  if (!travelPlan) {
+    throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
+  }
+
+  if (travelPlan.host.userId !== hostUserId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not allowed to update this travel plan"
+    );
+  }
+
+  /** ✅ DATE FIX HERE */
+  const updatedPlan = await prisma.travelPlan.update({
+    where: { id },
+    data: {
+      destination: payload.destination,
+      startDate: payload.startDate
+        ? new Date(payload.startDate)
+        : undefined,
+      endDate: payload.endDate
+        ? new Date(payload.endDate)
+        : undefined,
+      budget: payload.budget,
+      travelType: payload.travelType,
+      description: payload.description,
+    },
+  });
+
+  return updatedPlan;
+};
+
 
 
 export const travelPlanService = {
@@ -124,4 +167,5 @@ export const travelPlanService = {
   getPublicTravelPlans,
   getSingleTravelPlan,
   getMyTravelPlans,
+  updateTravelPlan,
 };
