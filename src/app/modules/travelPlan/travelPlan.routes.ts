@@ -11,6 +11,8 @@ const router = Router();
 // PATCH  /travel-plans/:id
 // DELETE /travel-plans/:id
 
+router.get("/my-plans", auth("HOST"), TravelPlanController.getMyTravelPlans);
+
 router.get("/", TravelPlanController.getPublicPlans);
 
 router.get("/:id", TravelPlanController.getSingleTravelPlan);

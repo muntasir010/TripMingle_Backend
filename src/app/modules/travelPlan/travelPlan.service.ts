@@ -73,6 +73,19 @@ const getSingleTravelPlan = async (id: number) => {
   return travelPlan;
 };
 
+const getMyTravelPlans = async (hostUserId: number) => {
+  return prisma.travelPlan.findMany({
+    where: {
+      host: {
+        userId: hostUserId,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 const createTravelPlan = async (
   userId: number,
   payload: CreateTravelPlanPayload
@@ -110,4 +123,5 @@ export const travelPlanService = {
   createTravelPlan,
   getPublicTravelPlans,
   getSingleTravelPlan,
+  getMyTravelPlans,
 };

@@ -45,8 +45,25 @@ const createTravelPlan = catchAsync(
     }
   );
 
+const getMyTravelPlans = catchAsync(
+  async (req: Request & { user?: any }, res: Response) => {
+    const hostUserId = req.user.userId;
+
+    const result = await travelPlanService.getMyTravelPlans(hostUserId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "My travel plans retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+
 export const TravelPlanController = {
   getPublicPlans,
   getSingleTravelPlan,
+  getMyTravelPlans,
   createTravelPlan,
 };
