@@ -1,6 +1,7 @@
 import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
 import httpStatus from "http-status";
+import { paginationHelper } from "../../helper/paginationHelper";
 
 type CreateTravelPlanPayload = {
   destination: string;
@@ -11,21 +12,62 @@ type CreateTravelPlanPayload = {
   description?: string;
 };
 
-// createTravelPlan(hostUserId) ✅
-// getAllTravelPlans() ✅
-// getSingleTravelPlan(id)✅
-// getMyTravelPlans(hostUserId)✅
-// updateTravelPlan(id)
-// deleteTravelPlan(id)
+const getPublicTravelPlans = async (filters: any, options: any) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
 
-const getPublicTravelPlans = async () => {
-  const today = new Date();
+  const andConditions: any[] = [];
 
-  const plans = await prisma.travelPlan.findMany({
-    where: {
-      endDate: {
-        gte: today,
+  // 🔍 SEARCH
+  if (filters.search) {
+    andConditions.push({
+      OR: [
+        { destination: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  // 🎛 FILTERS
+  if (filters.destination) {
+    andConditions.push({
+      destination: { equals: filters.destination, mode: "insensitive" },
+    });
+  }
+
+  if (filters.travelType) {
+    andConditions.push({ travelType: filters.travelType });
+  }
+
+  if (filters.budgetMin || filters.budgetMax) {
+    andConditions.push({
+      budget: {
+        gte: filters.budgetMin ? Number(filters.budgetMin) : undefined,
+        lte: filters.budgetMax ? Number(filters.budgetMax) : undefined,
       },
+    });
+  }
+
+  if (filters.startDate && filters.endDate) {
+    andConditions.push({
+      startDate: { gte: new Date(filters.startDate) },
+      endDate: { lte: new Date(filters.endDate) },
+    });
+  }
+
+  // ✅ Only upcoming tours
+  andConditions.push({
+    endDate: { gte: new Date() },
+  });
+
+  const whereCondition = andConditions.length ? { AND: andConditions } : {};
+
+  const data = await prisma.travelPlan.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
     },
     include: {
       host: {
@@ -33,18 +75,22 @@ const getPublicTravelPlans = async () => {
           user: {
             select: {
               id: true,
+              name: true,
               email: true,
+              profilePhoto: true,
             },
           },
         },
       },
     },
-    orderBy: {
-      startDate: "asc",
-    },
   });
 
-  return plans;
+  const total = await prisma.travelPlan.count({ where: whereCondition });
+
+  return {
+    meta: { page, limit, total },
+    data,
+  };
 };
 
 const getSingleTravelPlan = async (id: number) => {
@@ -73,17 +119,35 @@ const getSingleTravelPlan = async (id: number) => {
   return travelPlan;
 };
 
-const getMyTravelPlans = async (hostUserId: number) => {
-  return prisma.travelPlan.findMany({
+const getMyTravelPlans = async (hostUserId: number, options: any) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+
+  const data = await prisma.travelPlan.findMany({
     where: {
       host: {
         userId: hostUserId,
       },
     },
+    skip,
+    take: limit,
     orderBy: {
-      createdAt: "desc",
+      [sortBy]: sortOrder,
     },
   });
+
+  const total = await prisma.travelPlan.count({
+    where: {
+      host: {
+        userId: hostUserId,
+      },
+    },
+  });
+
+  return {
+    meta: { page, limit, total },
+    data,
+  };
 };
 
 const createTravelPlan = async (
@@ -145,12 +209,8 @@ const updateTravelPlan = async (
     where: { id },
     data: {
       destination: payload.destination,
-      startDate: payload.startDate
-        ? new Date(payload.startDate)
-        : undefined,
-      endDate: payload.endDate
-        ? new Date(payload.endDate)
-        : undefined,
+      startDate: payload.startDate ? new Date(payload.startDate) : undefined,
+      endDate: payload.endDate ? new Date(payload.endDate) : undefined,
       budget: payload.budget,
       travelType: payload.travelType,
       description: payload.description,
@@ -186,13 +246,11 @@ const deleteTravelPlan = async (id: number, hostUserId: number) => {
   return null;
 };
 
-
-
 export const travelPlanService = {
   createTravelPlan,
   getPublicTravelPlans,
   getSingleTravelPlan,
   getMyTravelPlans,
   updateTravelPlan,
-  deleteTravelPlan
+  deleteTravelPlan,
 };

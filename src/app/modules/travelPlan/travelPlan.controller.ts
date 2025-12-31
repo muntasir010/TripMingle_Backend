@@ -2,15 +2,24 @@ import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { travelPlanService } from "./travelPlan.service";
+import pick from "../../helper/pick";
+import { travelPlanFilterableFields, travelPlanPaginationFields } from "./travelPlan.constants";
 
 const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
-  const result = await travelPlanService.getPublicTravelPlans();
+  const filters = pick(req.query, travelPlanFilterableFields);
+  const paginationOptions = pick(req.query, travelPlanPaginationFields);
+
+  const result = await travelPlanService.getPublicTravelPlans(
+    filters,
+    paginationOptions
+  );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: "Public travel plans fetched successfully",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
@@ -49,13 +58,19 @@ const getMyTravelPlans = catchAsync(
   async (req: Request & { user?: any }, res: Response) => {
     const hostUserId = req.user.userId;
 
-    const result = await travelPlanService.getMyTravelPlans(hostUserId);
+    const paginationOptions = pick(req.query, travelPlanPaginationFields);
+
+    const result = await travelPlanService.getMyTravelPlans(
+      hostUserId,
+      paginationOptions
+    );
 
     sendResponse(res, {
       statusCode: 200,
       success: true,
       message: "My travel plans retrieved successfully",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );
