@@ -4,7 +4,29 @@ import sendResponse from "../../../shared/sendResponse";
 import { TravelRequestService } from "./travelRequest.service";
 import pick from "../../helper/pick";
 
+const getMyRequests = catchAsync(async (req: any, res: Response) => {
+  const filters = pick(req.query, ["status"]);
+  const paginationOptions = pick(req.query, [
+    "page",
+    "limit",
+    "sortBy",
+    "sortOrder",
+  ]);
 
+  const result = await TravelRequestService.getMyRequests(
+    req.user.userId,
+    filters,
+    paginationOptions
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "My travel requests fetched successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
 
 const getHostRequests = catchAsync(async (req: any, res: Response) => {
     const filters = pick(req.query, ["status"]);
@@ -69,6 +91,7 @@ const rejectRequest = catchAsync(async (req: any, res: Response) => {
 });
 
 export const TravelRequestController = {
+  getMyRequests,
   getHostRequests,
   sendRequest,
   approveRequest,

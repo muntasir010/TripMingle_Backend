@@ -4,6 +4,68 @@ import prisma from "../../../shared/prisma";
 import { RequestStatus } from "@prisma/client";
 import { paginationHelper } from "../../helper/paginationHelper";
 
+const getMyRequests = async (
+  requesterId: number,
+  filters: any,
+  options: any
+) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+
+  const andConditions: any[] = [];
+
+  // filter by status
+  if (filters.status) {
+    andConditions.push({
+      status: filters.status,
+    });
+  }
+
+  const whereCondition =
+    andConditions.length > 0
+      ? { AND: andConditions, requesterId }
+      : { requesterId };
+
+  const data = await prisma.travelRequest.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+    include: {
+      travelPlan: {
+        include: {
+          host: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const total = await prisma.travelRequest.count({
+    where: whereCondition,
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data,
+  };
+};
+
 const getRequestsForHost = async (
   hostUserId: number,
   filters: any,
@@ -76,7 +138,6 @@ const getRequestsForHost = async (
     data,
   };
 };
-
 
 const sendRequest = async (requesterId: number, travelPlanId: number) => {
   // travel plan exists?
@@ -183,6 +244,7 @@ const updateRequestStatus = async (
 };
 
 export const TravelRequestService = {
+  getMyRequests,
   sendRequest,
   getRequestsForHost,
   updateRequestStatus,

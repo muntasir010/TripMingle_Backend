@@ -1,14 +1,14 @@
-// POST   /travel-request           (TOURIST)
-// GET    /travel-request/host      (HOST)
-// PATCH  /travel-request/:id/approve
-// PATCH  /travel-request/:id/reject
-
 import { Router } from "express";
 import auth from "../../middleware/auth";
 import { TravelRequestController } from "./travelRequest.controller";
 
 const router = Router();
 
+router.get(
+  "/my-requests",
+  auth("TOURIST"),
+  TravelRequestController.getMyRequests
+);
 router.get(
   "/host",
   auth("HOST"),
