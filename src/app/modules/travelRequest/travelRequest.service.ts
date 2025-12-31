@@ -17,6 +17,17 @@ const sendRequest = async (requesterId: number, travelPlanId: number) => {
     throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
   }
 
+  const host = await prisma.host.findUnique({
+    where: { id: travelPlan.hostId },
+  });
+
+  if (host?.userId === requesterId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You cannot request your own travel plan"
+    );
+  }
+
   // 2️⃣ prevent duplicate request
   const alreadyRequested = await prisma.travelRequest.findFirst({
     where: {
@@ -37,6 +48,7 @@ const sendRequest = async (requesterId: number, travelPlanId: number) => {
     data: {
       requesterId,
       travelPlanId,
+      status: RequestStatus.PENDING,
     },
   });
 };
@@ -96,6 +108,13 @@ const updateRequestStatus = async (
 
   if (request.travelPlan.hostId !== host.id) {
     throw new AppError(httpStatus.FORBIDDEN, "Not your travel plan");
+  }
+
+  if (request.status !== "PENDING") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Request already ${request.status}`
+    );
   }
 
   const updated = await prisma.travelRequest.update({
