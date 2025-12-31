@@ -2,13 +2,84 @@ import httpStatus from "http-status";
 import AppError from "../../../shared/AppError";
 import prisma from "../../../shared/prisma";
 import { RequestStatus } from "@prisma/client";
+import { paginationHelper } from "../../helper/paginationHelper";
 
-type SendRequestPayload = {
-  travelPlanId: number;
+const getRequestsForHost = async (
+  hostUserId: number,
+  filters: any,
+  options: any
+) => {
+  const host = await prisma.host.findUnique({
+    where: { userId: hostUserId },
+  });
+
+  if (!host) {
+    throw new AppError(httpStatus.FORBIDDEN, "You are not a host");
+  }
+
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+
+  const andConditions: any[] = [];
+
+  // status filtering
+  if (filters.status) {
+    andConditions.push({
+      status: filters.status,
+    });
+  }
+
+  // host constraint
+  andConditions.push({
+    travelPlan: {
+      hostId: host.id,
+    },
+  });
+
+  const whereCondition = { AND: andConditions };
+
+  const data = await prisma.travelRequest.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+    include: {
+      requester: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
+      travelPlan: {
+        select: {
+          id: true,
+          destination: true,
+          startDate: true,
+          endDate: true,
+        },
+      },
+    },
+  });
+
+  const total = await prisma.travelRequest.count({
+    where: whereCondition,
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data,
+  };
 };
 
+
 const sendRequest = async (requesterId: number, travelPlanId: number) => {
-  // 1️⃣ travel plan exists?
+  // travel plan exists?
   const travelPlan = await prisma.travelPlan.findUnique({
     where: { id: travelPlanId },
   });
@@ -28,7 +99,22 @@ const sendRequest = async (requesterId: number, travelPlanId: number) => {
     );
   }
 
-  // 2️⃣ prevent duplicate request
+  // capacity check
+  const acceptedCount = await prisma.travelRequest.count({
+    where: {
+      travelPlanId,
+      status: "ACCEPTED",
+    },
+  });
+
+  if (travelPlan.capacity && acceptedCount >= travelPlan.capacity) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "This travel plan is already full"
+    );
+  }
+
+  // prevent duplicate request
   const alreadyRequested = await prisma.travelRequest.findFirst({
     where: {
       requesterId,
@@ -43,7 +129,7 @@ const sendRequest = async (requesterId: number, travelPlanId: number) => {
     );
   }
 
-  // 3️⃣ create request
+  // create request
   return prisma.travelRequest.create({
     data: {
       requesterId,
@@ -51,35 +137,6 @@ const sendRequest = async (requesterId: number, travelPlanId: number) => {
       status: RequestStatus.PENDING,
     },
   });
-};
-
-const getRequestsForHost = async (hostUserId: number) => {
-  const host = await prisma.host.findUnique({
-    where: { userId: hostUserId },
-  });
-
-  if (!host) {
-    throw new AppError(httpStatus.FORBIDDEN, "You are not a host");
-  }
-
-  const requests = await prisma.travelRequest.findMany({
-    where: {
-      travelPlan: {
-        hostId: host.id,
-      },
-    },
-    include: {
-      requester: {
-        select: {
-          id: true,
-          email: true,
-        },
-      },
-      travelPlan: true,
-    },
-  });
-
-  return requests;
 };
 
 const updateRequestStatus = async (

@@ -6,12 +6,13 @@ model TravelPlan {
   budget      Int
   travelType  String
   description String?
+  capacity    Int
   hostId      Int
 
-  host      Host     @relation(fields: [hostId], references: [id])
-  travelRequest TravelRequest [] 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  host          Host            @relation(fields: [hostId], references: [id])
+  travelRequest TravelRequest[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@map("travel_plans")
 }
