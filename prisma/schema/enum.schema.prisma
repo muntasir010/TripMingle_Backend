@@ -22,3 +22,9 @@ enum RequestStatus {
   ACCEPTED
   REJECTED
 }
+
+enum TravelType {
+  SOLO
+  FRIENDS
+  FAMILY
+}

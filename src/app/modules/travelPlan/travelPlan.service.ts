@@ -2,13 +2,14 @@ import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
 import httpStatus from "http-status";
 import { paginationHelper } from "../../helper/paginationHelper";
+import { TravelType } from "@prisma/client";
 
 type CreateTravelPlanPayload = {
   destination: string;
   startDate: string;
   endDate: string;
   budget: number;
-  travelType: string;
+  travelType: TravelType;
   description?: string;
   capacity: number;
 };
@@ -61,7 +62,12 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
     endDate: { gte: new Date() },
   });
 
-  const whereCondition = andConditions.length ? { AND: andConditions } : {};
+  const whereCondition = {
+    AND: [
+      ...(andConditions.length ? andConditions : []),
+      { isPublished: true },
+    ],
+  };
 
   const data = await prisma.travelPlan.findMany({
     where: whereCondition,
@@ -96,7 +102,10 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
 
 const getSingleTravelPlan = async (id: number) => {
   const travelPlan = await prisma.travelPlan.findUnique({
-    where: { id },
+    where: {
+      id,
+      isPublished: true,
+    },
     include: {
       host: {
         include: {
@@ -183,6 +192,39 @@ const createTravelPlan = async (
   return travelPlan;
 };
 
+const publishTravelPlan = async (adminUserId: number, travelPlanId: number) => {
+  // 1️⃣ check admin
+  const admin = await prisma.user.findUnique({
+    where: { id: adminUserId },
+  });
+
+  if (!admin || admin.role !== "ADMIN") {
+    throw new AppError(403, "Only admin can publish travel plans");
+  }
+
+  // 2️⃣ check travel plan exists
+  const plan = await prisma.travelPlan.findUnique({
+    where: { id: travelPlanId },
+  });
+
+  if (!plan) {
+    throw new AppError(404, "Travel plan not found");
+  }
+
+  // 3️⃣ already published?
+  if (plan.isPublished) {
+    throw new AppError(400, "Travel plan already published");
+  }
+
+  // 4️⃣ publish
+  return prisma.travelPlan.update({
+    where: { id: travelPlanId },
+    data: {
+      isPublished: true,
+    },
+  });
+};
+
 const updateTravelPlan = async (
   id: number,
   hostUserId: number,
@@ -250,6 +292,7 @@ const deleteTravelPlan = async (id: number, hostUserId: number) => {
 
 export const travelPlanService = {
   createTravelPlan,
+  publishTravelPlan,
   getPublicTravelPlans,
   getSingleTravelPlan,
   getMyTravelPlans,

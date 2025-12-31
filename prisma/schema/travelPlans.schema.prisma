@@ -1,13 +1,14 @@
 model TravelPlan {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   destination String
   startDate   DateTime
   endDate     DateTime
   budget      Int
-  travelType  String
+  travelType  TravelType
   description String?
   capacity    Int
   hostId      Int
+  isPublished Boolean    @default(false)
 
   host          Host            @relation(fields: [hostId], references: [id])
   travelRequest TravelRequest[]

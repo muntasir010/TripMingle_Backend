@@ -11,7 +11,7 @@ const router = express.Router();
 router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB);
 
 router.post(
-  "/create-admin", auth( UserRole.ADMIN),
+  "/create-admin",
   fileUploader.upload.single("file"),
   UserController.createAdmin
 );

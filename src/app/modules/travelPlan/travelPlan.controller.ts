@@ -52,7 +52,25 @@ const createTravelPlan = catchAsync(
         data: result,
       });
     }
+);
+
+const publishTravelPlan = catchAsync(async (req: any, res: Response) => {
+  const adminUserId = req.user.userId;
+  const travelPlanId = Number(req.params.id);
+
+  const result = await travelPlanService.publishTravelPlan(
+    adminUserId,
+    travelPlanId
   );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Travel plan published successfully",
+    data: result,
+  });
+});
+
 
 const getMyTravelPlans = catchAsync(
   async (req: Request & { user?: any }, res: Response) => {
@@ -116,6 +134,7 @@ export const TravelPlanController = {
   getSingleTravelPlan,
   getMyTravelPlans,
   createTravelPlan,
+  publishTravelPlan,
   updateTravelPlan,
   deleteTravelPlan
 };

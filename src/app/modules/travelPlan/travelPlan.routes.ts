@@ -12,6 +12,8 @@ router.get("/:id", TravelPlanController.getSingleTravelPlan);
 
 router.post("/", auth("HOST"), TravelPlanController.createTravelPlan);
 
+router.patch("/:id/publish", auth("ADMIN"), TravelPlanController.publishTravelPlan);
+
 router.patch("/:id", auth("HOST"), TravelPlanController.updateTravelPlan);
 
 router.delete("/:id", auth("HOST"), TravelPlanController.deleteTravelPlan);
