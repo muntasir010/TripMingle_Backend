@@ -10,6 +10,7 @@ type CreateTravelPlanPayload = {
   budget: number;
   travelType: string;
   description?: string;
+  capacity: number;
 };
 
 const getPublicTravelPlans = async (filters: any, options: any) => {
@@ -174,6 +175,7 @@ const createTravelPlan = async (
       budget: payload.budget,
       travelType: payload.travelType,
       description: payload.description,
+      capacity: Number(payload.capacity),
       hostId: host.id,
     },
   });
@@ -204,7 +206,6 @@ const updateTravelPlan = async (
     );
   }
 
-  /** ✅ DATE FIX HERE */
   const updatedPlan = await prisma.travelPlan.update({
     where: { id },
     data: {
@@ -213,6 +214,7 @@ const updateTravelPlan = async (
       endDate: payload.endDate ? new Date(payload.endDate) : undefined,
       budget: payload.budget,
       travelType: payload.travelType,
+      capacity: payload.capacity ? Number(payload.capacity) : undefined,
       description: payload.description,
     },
   });

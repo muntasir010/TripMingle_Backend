@@ -16,7 +16,7 @@ router.post(
   UserController.createAdmin
 );
 router.post(
-  "/create-host", auth( UserRole.ADMIN, UserRole.ADMIN),
+  "/create-host", auth( UserRole.ADMIN),
   fileUploader.upload.single("file"),
   UserController.createHost
 );

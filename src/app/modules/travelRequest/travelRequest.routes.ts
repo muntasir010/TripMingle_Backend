@@ -9,11 +9,7 @@ router.get(
   auth("TOURIST"),
   TravelRequestController.getMyRequests
 );
-router.get(
-  "/host",
-  auth("HOST"),
-  TravelRequestController.getHostRequests
-);
+router.get("/host", auth("HOST"), TravelRequestController.getHostRequests);
 
 router.patch(
   "/:id/approve",

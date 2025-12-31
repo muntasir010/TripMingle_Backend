@@ -235,6 +235,22 @@ const updateRequestStatus = async (
     );
   }
 
+   if (status === "ACCEPTED") {
+    const acceptedCount = await prisma.travelRequest.count({
+      where: {
+        travelPlanId: request.travelPlanId,
+        status: "ACCEPTED",
+      },
+    });
+
+    if (acceptedCount >= request.travelPlan.capacity) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Travel plan capacity is full"
+      );
+    }
+  }
+
   const updated = await prisma.travelRequest.update({
     where: { id: requestId },
     data: { status },
