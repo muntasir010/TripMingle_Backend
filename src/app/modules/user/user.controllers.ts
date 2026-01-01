@@ -78,10 +78,26 @@ const getSingleUser = catchAsync(async (req, res) => {
   });
 });
 
+const updateUser = catchAsync(async (req, res) => {
+  const id = Number(req.params.id);
+  const payload = req.body;
+
+  const result = await UserService.updateUser(id, payload);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "User updated successfully",
+    data: result,
+  });
+});
+
+
 export const UserController = {
   createAdmin,
   createHost,
   createTourist,
   getAllFromDB,
   getSingleUser,
+  updateUser,
 };

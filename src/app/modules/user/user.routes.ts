@@ -17,8 +17,10 @@ router.post(
   fileUploader.upload.single("file"),
   UserController.createAdmin
 );
+
 router.post(
-  "/create-host", auth( UserRole.ADMIN),
+  "/create-host",
+  auth(UserRole.ADMIN),
   fileUploader.upload.single("file"),
   UserController.createHost
 );
@@ -38,5 +40,7 @@ router.post(
     return UserController.createTourist(req, res, next);
   }
 );
+
+router.patch("/:id", auth("ADMIN", "USER"), UserController.updateUser);
 
 export const UserRoutes = router;

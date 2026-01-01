@@ -226,10 +226,21 @@ const getSingleUser = async (id: number) => {
   return user;
 };
 
+const updateUser = async (id: number, payload: any) => {
+  await prisma.user.findUniqueOrThrow({ where: { id } });
+
+  return prisma.user.update({
+    where: { id },
+    data: payload,
+  });
+};
+
+
 export const UserService = {
   createTourist,
   createHost,
   createAdmin,
   getAllFromDB,
   getSingleUser,
+  updateUser,
 };
