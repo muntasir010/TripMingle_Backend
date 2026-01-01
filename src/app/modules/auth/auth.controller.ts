@@ -59,7 +59,26 @@ const switchAccountRole = catchAsync(async (req: Request & { user?: any }, res: 
   });
 });
 
+const changePassword = catchAsync(async (req: any, res: Response) => {
+  if (!req.user?.userId) {
+    throw new AppError(401, "Unauthorized user");
+  }
+
+  const result = await AuthService.changePassword(
+    req.user.userId,
+    req.body
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Password changed successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   loginUser,
   switchAccountRole,  
+  changePassword,
 };

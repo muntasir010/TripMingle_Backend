@@ -84,8 +84,33 @@ const switchActiveRole = async (
   });
 };
 
+const changePassword = async (userId: number, payload: any) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  const isMatch = await bcrypt.compare(
+    payload.oldPassword,
+    user!.password
+  );
+
+  if (!isMatch) {
+    throw new AppError(401, "Old password incorrect");
+  }
+
+  const newPassword = await bcrypt.hash(payload.newPassword, 12);
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: newPassword,
+      needPasswordChange: false,
+    },
+  });
+};
+
+
 
 export const AuthService = {
   loginUser,
   switchActiveRole,
+  changePassword,
 };

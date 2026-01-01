@@ -46,4 +46,5 @@ router.patch("/:id", auth("ADMIN", "USER"), UserController.updateUser);
 router.delete("/:id", auth("ADMIN"), UserController.deleteUser);
 
 
+
 export const UserRoutes = router;
