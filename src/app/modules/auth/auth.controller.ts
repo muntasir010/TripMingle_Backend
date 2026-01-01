@@ -77,8 +77,59 @@ const changePassword = catchAsync(async (req: any, res: Response) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  const result = await AuthService.forgotPassword(email);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Reset link sent",
+    data: result,
+  });
+});
+
+// const resetPassword = catchAsync(async (req: Request, res: Response) => {
+//   const { token } = req.query;
+//   const { newPassword } = req.body;
+
+//   const result = await AuthService.resetPassword(
+//     token as string,
+//     newPassword
+//   );
+
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: "Password reset successful",
+//     data: result,
+//   });
+// });
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    throw new AppError(400, "Reset token missing");
+  }
+
+  const { newPassword } = req.body;
+
+  const result = await AuthService.resetPassword(token, newPassword);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Password reset successful",
+    data: result,
+  });
+});
+
 export const AuthController = {
   loginUser,
   switchAccountRole,  
   changePassword,
+  forgotPassword,
+  resetPassword
 };

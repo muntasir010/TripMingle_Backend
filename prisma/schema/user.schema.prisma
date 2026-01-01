@@ -11,6 +11,8 @@ model User {
   profilePhoto       String?
   needPasswordChange Boolean          @default(false)
   activeRole         UserRole         @default(TOURIST)
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
   travelRequest      TravelRequest[]
   profile            UserProfile?
   admin              Admin?
