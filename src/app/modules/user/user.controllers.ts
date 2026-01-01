@@ -73,7 +73,7 @@ const getSingleUser = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User fetched successfully",
+    message: `${result.role} fetched successfully`,
     data: result,
   });
 });
@@ -87,11 +87,22 @@ const updateUser = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User updated successfully",
+    message:  `${result.role} updated successfully`,
     data: result,
   });
 });
 
+const deleteUser = catchAsync(async (req, res) => {
+  const id = Number(req.params.id);
+
+  const result =await UserService.deleteUser(id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `${result.role} deleted successfully`,
+  });
+});
 
 export const UserController = {
   createAdmin,
@@ -100,4 +111,5 @@ export const UserController = {
   getAllFromDB,
   getSingleUser,
   updateUser,
+  deleteUser,
 };

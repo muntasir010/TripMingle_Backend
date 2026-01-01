@@ -235,6 +235,13 @@ const updateUser = async (id: number, payload: any) => {
   });
 };
 
+const deleteUser = async (id: number) => {
+  return prisma.user.update({
+    where: { id },
+    data: { isDeleted: true },
+  });
+};
+
 
 export const UserService = {
   createTourist,
@@ -243,4 +250,5 @@ export const UserService = {
   getAllFromDB,
   getSingleUser,
   updateUser,
+  deleteUser
 };
