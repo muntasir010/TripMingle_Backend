@@ -53,7 +53,6 @@ const createAdmin = async (req: Request) => {
   return result;
 };
 
-
 const createHost = async (req: any) => {
   const { host, password } = req.body;
 
@@ -73,7 +72,7 @@ const createHost = async (req: any) => {
     throw new AppError(httpStatus.CONFLICT, "User already exists");
   }
 
-  // 2. image upload 
+  // 2. image upload
   if (req.file) {
     const uploadResult = await fileUploader.uploadCloudinary(req.file);
     host.profilePhoto = uploadResult?.secure_url;
@@ -215,9 +214,22 @@ const getAllFromDB = async (params: any, options: any) => {
   };
 };
 
+const getSingleUser = async (id: number) => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+  });
+
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
+
+  return user;
+};
+
 export const UserService = {
   createTourist,
   createHost,
   createAdmin,
   getAllFromDB,
+  getSingleUser,
 };

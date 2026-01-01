@@ -65,9 +65,23 @@ const getAllFromDB = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleUser = catchAsync(async (req, res) => {
+  const id = Number(req.params.id);
+
+  const result = await UserService.getSingleUser(id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "User fetched successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   createAdmin,
   createHost,
   createTourist,
   getAllFromDB,
+  getSingleUser,
 };

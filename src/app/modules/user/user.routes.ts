@@ -8,6 +8,8 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
+router.get("/:id", auth("ADMIN"), UserController.getSingleUser);
+
 router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB);
 
 router.post(
