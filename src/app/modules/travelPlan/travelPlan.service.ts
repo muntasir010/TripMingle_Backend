@@ -248,6 +248,19 @@ const updateTravelPlan = async (
     );
   }
 
+  // block edit if published
+  if (travelPlan.isPublished) {
+    throw new AppError(
+      400,
+      "Published travel plan cannot be updated"
+    );
+  }
+
+  // ownership check
+  if (travelPlan.hostId !== hostUserId) {
+    throw new AppError(403, "Not your travel plan");
+  }
+
   const updatedPlan = await prisma.travelPlan.update({
     where: { id },
     data: {
@@ -275,11 +288,23 @@ const deleteTravelPlan = async (id: number, hostUserId: number) => {
   if (!travelPlan) {
     throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
   }
+  // stop delete if published
+  if (travelPlan.isPublished) {
+    throw new AppError(
+      400,
+      "Published travel plan cannot be deleted"
+    );
+  }
+
+  // ownership check
+  if (travelPlan.hostId !== hostUserId) {
+    throw new AppError(403, "Not your travel plan");
+  }
 
   if (travelPlan.host.userId !== hostUserId) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      "You are not allowed to delete this travel plan"
+      "Yo0u are not allowed to delete this travel plan"
     );
   }
 

@@ -1,25 +1,22 @@
 model User {
-  id                 Int      @id @default(autoincrement())
-  name               String
-  email              String   @unique
+  id                 Int              @id @default(autoincrement())
+  email              String           @unique
   password           String
-  needPasswordChange Boolean  @default(false)
-  role               UserRole @default(TOURIST)
-
-  profilePhoto String?
-  isPremium    Boolean @default(false)
-  isDeleted    Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  profile UserProfile?
-
-  admin   Admin?
-  host    Host?
-  tourist Tourist?
-
-  travelRequest TravelRequest[]
+  role               UserRole         @default(TOURIST)
+  isPremium          Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  name               String
+  isDeleted          Boolean          @default(false)
+  profilePhoto       String?
+  needPasswordChange Boolean          @default(false)
+  activeRole         UserRole         @default(TOURIST)
+  travelRequest      TravelRequest[]
+  profile            UserProfile?
+  admin              Admin?
+  hostApplications   HostApplication?
+  host               Host?
+  tourist            Tourist?
 
   @@map("users")
 }
@@ -33,56 +30,55 @@ model UserProfile {
   location         String?
   facebook         String?
   instagram        String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Admin {
-  id     Int @id @default(autoincrement())
-  userId Int @unique
-
-  phone        String?
+  id           Int      @id @default(autoincrement())
   profilePhoto String?
-
-  isDeleted Boolean @default(false)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  phone        String?
+  userId       Int      @unique
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("admins")
 }
 
 model Host {
-  id     Int  @id @default(autoincrement())
-  userId Int  @unique
-  user   User @relation(fields: [userId], references: [id])
-
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  phone       String?
+  address     String?
+  isVerified  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id])
   travelPlans TravelPlan[]
-
-  phone      String?
-  address    String?
-  isVerified Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("hosts")
 }
 
 model Tourist {
-  id     Int @id @default(autoincrement())
-  userId Int @unique
-
-  phone   String?
-  country String?
-  bio     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  phone     String?
+  country   String?
+  bio       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tourists")
+}
+
+model HostApplication {
+  id        Int                   @id @default(autoincrement())
+  userId    Int                   @unique
+  status    HostApplicationStatus @default(PENDING)
+  createdAt DateTime              @default(now())
+  user      User                  @relation(fields: [userId], references: [id])
+
+  @@map("host_applications")
 }

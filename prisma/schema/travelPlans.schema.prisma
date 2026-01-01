@@ -1,33 +1,30 @@
 model TravelPlan {
-  id          Int        @id @default(autoincrement())
-  destination String
-  startDate   DateTime
-  endDate     DateTime
-  budget      Int
-  travelType  TravelType
-  description String?
-  capacity    Int
-  hostId      Int
-  isPublished Boolean    @default(false)
-
-  host          Host            @relation(fields: [hostId], references: [id])
-  travelRequest TravelRequest[]
+  id            Int             @id @default(autoincrement())
+  destination   String
+  startDate     DateTime
+  endDate       DateTime
+  budget        Int
+  description   String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  hostId        Int
+  capacity      Int
+  travelType    TravelType
+  isPublished   Boolean         @default(false)
+  travelRequest TravelRequest[]
+  host          Host            @relation(fields: [hostId], references: [id])
 
   @@map("travel_plans")
 }
 
 model TravelRequest {
   id           Int           @id @default(autoincrement())
-  requesterId  Int
   travelPlanId Int
+  requesterId  Int
   status       RequestStatus @default(PENDING)
-
-  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id])
-  requester  User       @relation(fields: [requesterId], references: [id])
-
-  createdAt DateTime @default(now())
+  createdAt    DateTime      @default(now())
+  requester    User          @relation(fields: [requesterId], references: [id])
+  travelPlan   TravelPlan    @relation(fields: [travelPlanId], references: [id])
 
   @@unique([travelPlanId, requesterId])
 }

@@ -181,7 +181,6 @@ const getAllFromDB = async (params: any, options: any) => {
       })),
     });
   }
-  console.log(andConditions);
 
   const whereConditions: Prisma.UserWhereInput =
     andConditions.length > 0

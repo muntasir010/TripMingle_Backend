@@ -59,6 +59,33 @@ const refreshToken = jwtHelper.generateToken(
   };
 };
 
+const switchActiveRole = async (
+  userId: number,
+  role: "TOURIST" | "HOST"
+) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { host: true },
+  });
+
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
+
+  if (role === "HOST" && !user.host) {
+    throw new AppError(403, "You are not registered as a Host");
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      role: role,
+    },
+  });
+};
+
+
 export const AuthService = {
   loginUser,
+  switchActiveRole,
 };

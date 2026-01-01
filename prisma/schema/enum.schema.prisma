@@ -1,20 +1,25 @@
-
 enum UserRole {
-    TOURIST
-    HOST
-    ADMIN
-    SUPER_ADMIN
+  TOURIST
+  HOST
+  ADMIN
+  SUPER_ADMIN
+  BOTH
+}
+
+enum ActiveRole {
+  TOURIST
+  HOST
 }
 
 enum UserStatus {
-    ACTIVE
-    INACTIVE
-    DELETED
+  ACTIVE
+  INACTIVE
+  DELETED
 }
 
 enum Gender {
-    MALE
-    FEMALE
+  MALE
+  FEMALE
 }
 
 enum RequestStatus {
@@ -27,4 +32,10 @@ enum TravelType {
   SOLO
   FRIENDS
   FAMILY
+}
+
+enum HostApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

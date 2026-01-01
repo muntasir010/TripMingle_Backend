@@ -1,3 +1,4 @@
+import AppError from "../../../shared/AppError";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { AuthService } from "./auth.service";
@@ -35,6 +36,30 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const switchAccountRole = catchAsync(async (req: Request & { user?: any }, res: Response) => {
+ 
+  const userId = req.user?.userId; 
+
+  if (!userId) {
+    throw new AppError(401, "Unauthorized user");
+  }
+
+  const { role } = req.body;
+
+  const result = await AuthService.switchActiveRole(
+    userId, 
+    role
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Role switched successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   loginUser,
+  switchAccountRole,  
 };
