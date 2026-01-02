@@ -4,8 +4,8 @@ import { AuthRoutes } from "../modules/auth/auth.routes";
 import { profileRoutes } from "../modules/profile/profile.routes";
 import { travelPlansRoutes } from "../modules/travelPlan/travelPlan.routes";
 import { travelRequestRoutes } from "../modules/travelRequest/travelRequest.routes";
-import { AdminRoutes } from "../modules/Admin/admin.routes";
-import { HostRoutes } from "../modules/hostApplication/hostApplication.routes";
+// import { AdminRoutes } from "../modules/admin/admin.routes";
+import { HostRoutes } from "../modules/host/host.routes";
 
 const router = express.Router();
 
@@ -18,10 +18,10 @@ const moduleRoutes = [
     path: "/auth",
     route: AuthRoutes,
   },
-  {
-    path: "/admin",
-    route: AdminRoutes,
-  },
+  // {
+  //   path: "/admin",
+  //   route: AdminRoutes,
+  // },
   {
     path: "/host",
     route: HostRoutes,

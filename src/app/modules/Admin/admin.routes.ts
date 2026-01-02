@@ -1,13 +1,9 @@
-import express from "express";
-import auth from "../../middleware/auth";
-import { AdminController } from "./admin.controller";
+// import express from "express";
+// import auth from "../../middleware/auth";
+// import { AdminController } from "./admin.controller";
 
-const router = express.Router();
-router.patch(
-  "/host-applications/:id/approve",
-  auth("ADMIN"),
-  AdminController.approveHost
-);
+// const router = express.Router();
 
 
-export const AdminRoutes = router;
+
+// export const AdminRoutes = router;
