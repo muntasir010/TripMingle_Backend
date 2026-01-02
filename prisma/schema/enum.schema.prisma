@@ -39,3 +39,9 @@ enum HostApplicationStatus {
   APPROVED
   REJECTED
 }
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}

@@ -24,8 +24,12 @@ export default {
   },
 
   email_host: process.env.EMAIL_HOST as string,
-  email_port: process.env.EMAIL_PORT ,
+  email_port: process.env.EMAIL_PORT,
   email_user: process.env.EMAIL_USER as string,
   email_pass: process.env.EMAIL_PASS as string,
   frontend_url: process.env.FRONTEND_URL as string,
+  backend_url: process.env.BACKEND_URL as string,
+
+  ssl_store_id: process.env.SSL_STORE_ID as string,
+  ssl_store_pass: process.env.SSL_STORE_PASS as string,
 };
