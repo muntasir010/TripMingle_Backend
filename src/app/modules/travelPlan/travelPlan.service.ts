@@ -2,17 +2,7 @@ import prisma from "../../../shared/prisma";
 import AppError from "../../../shared/AppError";
 import httpStatus from "http-status";
 import { paginationHelper } from "../../helper/paginationHelper";
-import { TravelType } from "@prisma/client";
-
-type CreateTravelPlanPayload = {
-  destination: string;
-  startDate: string;
-  endDate: string;
-  budget: number;
-  travelType: TravelType;
-  description?: string;
-  capacity: number;
-};
+import { CreateTravelPlanPayload, SearchQuery } from "./travelPlan.types";
 
 const getPublicTravelPlans = async (filters: any, options: any) => {
   const { page, limit, skip, sortBy, sortOrder } =
@@ -315,6 +305,79 @@ const deleteTravelPlan = async (id: number, hostUserId: number) => {
   return null;
 };
 
+const searchTravelPlans = async (query: SearchQuery) => {
+  const {
+    destination,
+    startDate,
+    endDate,
+    interests,
+    page = "1",
+    limit = "10",
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const andConditions: any[] = [
+    { isPublished: true },
+  ];
+
+  // 🔍 Destination search
+  if (destination) {
+    andConditions.push({
+      destination: {
+        contains: destination,
+        mode: "insensitive",
+      },
+    });
+  }
+
+  // 📅 Date range filter
+  if (startDate && endDate) {
+    andConditions.push({
+      startDate: { gte: new Date(startDate) },
+      endDate: { lte: new Date(endDate) },
+    });
+  }
+
+  // 🎯 Interests match (ANY match)
+  if (interests) {
+    const interestArray = interests.split(",");
+    andConditions.push({
+      interests: {
+        hasSome: interestArray,
+      },
+    });
+  }
+
+  const whereCondition = {
+    AND: andConditions,
+  };
+
+  const data = await prisma.travelPlan.findMany({
+    where: whereCondition,
+    skip,
+    take: Number(limit),
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  });
+
+  const total = await prisma.travelPlan.count({
+    where: whereCondition,
+  });
+
+  return {
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+    },
+    data,
+  };
+};
+
 export const travelPlanService = {
   createTravelPlan,
   publishTravelPlan,
@@ -323,4 +386,5 @@ export const travelPlanService = {
   getMyTravelPlans,
   updateTravelPlan,
   deleteTravelPlan,
+  searchTravelPlans,
 };

@@ -12,6 +12,7 @@ model TravelPlan {
   endDate       DateTime
   budget        Int
   description   String?
+  interests     String[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   hostId        Int
@@ -38,22 +39,20 @@ model TravelRequest {
   @@unique([travelPlanId, requesterId])
 }
 
-
 model Trip {
-  id            Int        @id @default(autoincrement())
-  travelPlanId  Int
-  touristId     Int
-  hostId        Int
-  status        TripStatus
+  id           Int        @id @default(autoincrement())
+  travelPlanId Int
+  touristId    Int
+  hostId       Int
+  status       TripStatus
 
-  travelPlan    TravelPlan @relation(fields: [travelPlanId], references: [id])
-  tourist       User       @relation("TouristTrips", fields: [touristId], references: [id])
-  host          User       @relation("HostTrips", fields: [hostId], references: [id])
+  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id])
+  tourist    User       @relation("TouristTrips", fields: [touristId], references: [id])
+  host       User       @relation("HostTrips", fields: [hostId], references: [id])
 
-  reviews       Review[]
+  reviews Review[]
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("trips")
 }
-

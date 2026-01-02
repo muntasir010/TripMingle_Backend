@@ -5,11 +5,13 @@ import checkActiveRole from "../../middleware/checkActiveRole";
 
 const router = Router();
 
+router.get("/:id", TravelPlanController.getSingleTravelPlan);
+
 router.get("/my-plans", auth("HOST"), TravelPlanController.getMyTravelPlans);
 
 router.get("/", TravelPlanController.getPublicPlans);
 
-router.get("/:id", TravelPlanController.getSingleTravelPlan);
+router.get("/search", TravelPlanController.searchTravelPlans);
 
 router.post("/", auth("HOST"), checkActiveRole("HOST"), TravelPlanController.createTravelPlan);
 

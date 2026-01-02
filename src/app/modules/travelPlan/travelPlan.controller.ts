@@ -128,6 +128,16 @@ const deleteTravelPlan = catchAsync(async (req: Request & { user?: any }, res: R
   });
 });
 
+const searchTravelPlans = catchAsync(async (req: Request, res: Response) => {
+  const result = await travelPlanService.searchTravelPlans(req.query);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Travel plans retrieved successfully",
+    data: result,
+  });
+});
 
 export const TravelPlanController = {
   getPublicPlans,
@@ -136,5 +146,6 @@ export const TravelPlanController = {
   createTravelPlan,
   publishTravelPlan,
   updateTravelPlan,
-  deleteTravelPlan
+  deleteTravelPlan,
+  searchTravelPlans,
 };
