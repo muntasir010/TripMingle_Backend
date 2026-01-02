@@ -1,3 +1,10 @@
+enum TripStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
 model TravelPlan {
   id            Int             @id @default(autoincrement())
   destination   String
@@ -11,8 +18,10 @@ model TravelPlan {
   capacity      Int
   travelType    TravelType
   isPublished   Boolean         @default(false)
+  reviews       Review[]
   travelRequest TravelRequest[]
   host          Host            @relation(fields: [hostId], references: [id])
+  trips         Trip[]
 
   @@map("travel_plans")
 }
@@ -28,3 +37,23 @@ model TravelRequest {
 
   @@unique([travelPlanId, requesterId])
 }
+
+
+model Trip {
+  id            Int        @id @default(autoincrement())
+  travelPlanId  Int
+  touristId     Int
+  hostId        Int
+  status        TripStatus
+
+  travelPlan    TravelPlan @relation(fields: [travelPlanId], references: [id])
+  tourist       User       @relation("TouristTrips", fields: [touristId], references: [id])
+  host          User       @relation("HostTrips", fields: [hostId], references: [id])
+
+  reviews       Review[]
+
+  createdAt     DateTime @default(now())
+
+  @@map("trips")
+}
+

@@ -1,24 +1,28 @@
 model User {
-  id                 Int              @id @default(autoincrement())
-  email              String           @unique
-  password           String
-  role               UserRole         @default(TOURIST)
-  isPremium          Boolean          @default(false)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  name               String
-  isDeleted          Boolean          @default(false)
-  profilePhoto       String?
-  needPasswordChange Boolean          @default(false)
-  activeRole         UserRole         @default(TOURIST)
-  passwordResetToken   String?
+  id                   Int              @id @default(autoincrement())
+  email                String           @unique
+  password             String
+  role                 UserRole         @default(TOURIST)
+  isPremium            Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  name                 String
+  isDeleted            Boolean          @default(false)
+  profilePhoto         String?
+  needPasswordChange   Boolean          @default(false)
+  activeRole           UserRole         @default(TOURIST)
   passwordResetExpires DateTime?
-  travelRequest      TravelRequest[]
-  profile            UserProfile?
-  admin              Admin?
-  hostApplications   HostApplication?
-  host               Host?
-  tourist            Tourist?
+  passwordResetToken   String?
+  reviewsReceived      Review[]         @relation("Reviewee")
+  reviewsGiven         Review[]         @relation("Reviewer")
+  touristTrips         Trip[]           @relation("TouristTrips")
+  hostTrips            Trip[]           @relation("HostTrips")
+  travelRequest        TravelRequest[]
+  profile              UserProfile?
+  admin                Admin?
+  hostApplications     HostApplication?
+  host                 Host?
+  tourist              Tourist?
 
   @@map("users")
 }
