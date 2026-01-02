@@ -139,12 +139,27 @@ const searchTravelPlans = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const togglePublish = catchAsync(async (req, res) => {
+  const result = await travelPlanService.togglePublish(
+    req.user.id,
+    Number(req.params.id)
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Visibility updated",
+    data: result,
+  });
+});
+
 export const TravelPlanController = {
   getPublicPlans,
   getSingleTravelPlan,
   getMyTravelPlans,
   createTravelPlan,
   publishTravelPlan,
+  togglePublish,
   updateTravelPlan,
   deleteTravelPlan,
   searchTravelPlans,

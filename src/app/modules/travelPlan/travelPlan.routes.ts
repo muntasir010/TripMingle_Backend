@@ -13,9 +13,24 @@ router.get("/", TravelPlanController.getPublicPlans);
 
 router.get("/search", TravelPlanController.searchTravelPlans);
 
-router.post("/", auth("HOST"), checkActiveRole("HOST"), TravelPlanController.createTravelPlan);
+router.post(
+  "/",
+  auth("HOST"),
+  checkActiveRole("HOST"),
+  TravelPlanController.createTravelPlan
+);
 
-router.patch("/:id/publish", auth("ADMIN"), TravelPlanController.publishTravelPlan);
+router.patch(
+  "/:id/publish",
+  auth("ADMIN"),
+  TravelPlanController.publishTravelPlan
+);
+
+router.patch(
+  "/:id/publish",
+  auth("HOST"),
+  TravelPlanController.togglePublish
+);
 
 router.patch("/:id", auth("HOST"), TravelPlanController.updateTravelPlan);
 

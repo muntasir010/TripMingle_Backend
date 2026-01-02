@@ -378,9 +378,25 @@ const searchTravelPlans = async (query: SearchQuery) => {
   };
 };
 
+const togglePublish = async (userId: number, planId: number) => {
+  const plan = await prisma.travelPlan.findUnique({
+    where: { id: planId },
+  });
+
+  if (!plan || plan.hostId !== userId) {
+    throw new AppError(403, "Unauthorized");
+  }
+
+  return prisma.travelPlan.update({
+    where: { id: planId },
+    data: { isPublished: !plan.isPublished },
+  });
+};
+
 export const travelPlanService = {
   createTravelPlan,
   publishTravelPlan,
+  togglePublish,
   getPublicTravelPlans,
   getSingleTravelPlan,
   getMyTravelPlans,
