@@ -1,9 +1,11 @@
 model User {
   id                   Int              @id @default(autoincrement())
   email                String           @unique
+  premiumUntil         DateTime?
   password             String
   role                 UserRole         @default(TOURIST)
   isPremium            Boolean          @default(false)
+  verifiedBadge        Boolean          @default(false)
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   name                 String
@@ -23,7 +25,7 @@ model User {
   hostApplications     HostApplication?
   host                 Host?
   tourist              Tourist?
-  payments Payment[]
+  payments             Payment[]
 
   @@map("users")
 }
