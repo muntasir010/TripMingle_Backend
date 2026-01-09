@@ -20,4 +20,4 @@ router.patch("/:id/approve", auth("ADMIN"), HostController.approveHost);
 
 router.patch("/:id/reject", auth("ADMIN"), HostController.rejectHostRequest);
 
-export const AdminRoutes = router;
+export const AdminRoute = router;

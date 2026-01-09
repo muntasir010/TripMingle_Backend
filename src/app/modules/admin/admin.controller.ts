@@ -1,8 +1,8 @@
 import { UserRole } from "@prisma/client";
 import catchAsync from "../../../shared/catchAsync";
 import prisma from "../../../shared/prisma";
-import { AdminService } from "./admin.service";
 import sendResponse from "../../../shared/sendResponse";
+import { AdminService } from "./admin.service";
 
 const getAdminStats = catchAsync(async (req, res) => {
   const result = await AdminService.getAdminStats();
