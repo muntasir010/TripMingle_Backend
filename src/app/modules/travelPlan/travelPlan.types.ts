@@ -1,10 +1,12 @@
 import { TravelType } from "@prisma/client";
 
 export type CreateTravelPlanPayload = {
+  title: string;
   destination: string;
   startDate: string;
   endDate: string;
   budget: number;
+  photoURL: string;
   travelType: TravelType;
   description?: string;
   capacity: number;

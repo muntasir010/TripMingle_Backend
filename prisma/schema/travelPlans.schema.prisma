@@ -7,7 +7,9 @@ enum TripStatus {
 
 model TravelPlan {
   id            Int             @id @default(autoincrement())
+  title         String
   destination   String
+  photoURL      String
   startDate     DateTime
   endDate       DateTime
   budget        Int

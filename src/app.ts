@@ -5,6 +5,7 @@ import notFound from "./app/middleware/notFound";
 import cookieParser from "cookie-parser";
 import config from "./config";
 import globalErrorHandler from "./app/middleware/globalErrorHandler";
+import path from "path";
 
 const app: Application = express();
 
@@ -15,11 +16,17 @@ app.use(
   })
 );
 
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1", router);
+app.disable("etag");
 
 app.get("/", (req: Request, res: Response) => {
   res.send({

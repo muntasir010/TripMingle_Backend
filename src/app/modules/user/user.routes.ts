@@ -8,22 +8,18 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
+router.get("/profile", auth(), UserController.getMyProfile);
+
 router.get("/:id", auth("ADMIN"), UserController.getSingleUser);
 
 router.get("/", auth(UserRole.ADMIN), UserController.getAllFromDB);
 
 router.post(
-  "/create-admin",
+  "/create-admin", auth("ADMIN"),
   fileUploader.upload.single("file"),
   UserController.createAdmin
 );
 
-router.post(
-  "/create-host",
-  auth(UserRole.ADMIN),
-  fileUploader.upload.single("file"),
-  UserController.createHost
-);
 
 router.post(
   "/create-tourist",

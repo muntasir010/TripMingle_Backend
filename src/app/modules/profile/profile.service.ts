@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import AppError from "../../../shared/AppError";
 import prisma from "../../../shared/prisma";
 
+
+
 const createProfile = async (userId: number, payload: any) => {
   const isExist = await prisma.userProfile.findUnique({
     where: { userId },

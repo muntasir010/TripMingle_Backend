@@ -5,6 +5,21 @@ import pick from "../../helper/pick";
 import { userFilterableFields, userOptionsFields } from "./user.constant";
 import AppError from "../../../shared/AppError";
 
+const getMyProfile = catchAsync(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
+  const user = await UserService.getMyProfile(req.user);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Profile fetched successfully",
+    data: user,
+  });
+});
+
 const createAdmin = catchAsync(async (req, res) => {
 
   if (req.body?.data) {
@@ -39,7 +54,10 @@ const createHost = catchAsync(async (req, res) => {
 });
 
 const createTourist = catchAsync(async (req, res) => {
+    console.log("req.body", req.body);
   const result = await UserService.createTourist(req);
+  console.log("req.body", req.body);
+
 
   sendResponse(res, {
     statusCode: 201,
@@ -112,4 +130,5 @@ export const UserController = {
   getSingleUser,
   updateUser,
   deleteUser,
+  getMyProfile
 };

@@ -3,6 +3,18 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { HostService } from "./host.service";
 
+const getMyHostStatus = catchAsync(async (req, res) => {
+  const result = await HostService.getMyHostStatus(req.user.userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Host status retrieved successfully",
+    data: result,
+  });
+});
+
+
 const getAllHostApplications = catchAsync(async (req, res) => {
   const result = await HostService.getAllHostApplications(req.query);
 
@@ -55,6 +67,7 @@ const rejectHostRequest = catchAsync(
 );
 
 export const HostController = {
+  getMyHostStatus,
   getAllHostApplications,
   applyHost,
   approveHost,

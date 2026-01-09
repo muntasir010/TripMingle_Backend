@@ -1,6 +1,10 @@
+import httpStatus from 'http-status';
+import config from "../../../config";
 import AppError from "../../../shared/AppError";
 import catchAsync from "../../../shared/catchAsync";
+import prisma from "../../../shared/prisma";
 import sendResponse from "../../../shared/sendResponse";
+import { jwtHelper } from "../../helper/jwtHelper";
 import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
 
@@ -16,15 +20,17 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    // secure: process.env.NODE_ENV === "production",
+    secure: false,
+    sameSite: "lax",
     maxAge: 60 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    // secure: process.env.NODE_ENV === "production",
+    secure: false,
+    sameSite: "lax",
     maxAge: 60 * 24 * 60 * 60 * 1000,
   });
 
@@ -36,28 +42,47 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const switchAccountRole = catchAsync(async (req: Request & { user?: any }, res: Response) => {
- 
-  const userId = req.user?.userId; 
-
-  if (!userId) {
-    throw new AppError(401, "Unauthorized user");
-  }
-
+export const switchAccountRole = async (req: Request & { user?: any }, res: Response) => {
+  const userId = req.user.userId;
   const { role } = req.body;
 
-  const result = await AuthService.switchActiveRole(
-    userId, 
-    role
+  // 1️⃣ DB update (role + activeRole)
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      role,
+      activeRole: role,
+    },
+  });
+
+  // 2️⃣ NEW JWT PAYLOAD
+  const tokenPayload = {
+    userId: user.id,
+    role: user.role,
+    activeRole: user.activeRole,
+  };
+
+  // 3️⃣ Generate fresh access token
+  const accessToken = jwtHelper.generateToken(
+    tokenPayload,
+    config.jwt_access_secret as string,
+    config.jwt_access_expires_in as number
   );
 
-  sendResponse(res, {
-    statusCode: 200,
+  // 4️⃣ Overwrite cookie
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false, // production এ true
+    sameSite: "lax",
+  });
+
+  res.status(httpStatus.OK).json({
     success: true,
     message: "Role switched successfully",
-    data: result,
+    data: user,
   });
-});
+};
+
 
 const changePassword = catchAsync(async (req: any, res: Response) => {
   if (!req.user?.userId) {
@@ -109,10 +134,23 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logout = (req: Request, res: Response) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    sameSite: "lax",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
 export const AuthController = {
   loginUser,
   switchAccountRole,  
   changePassword,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  logout,
 };

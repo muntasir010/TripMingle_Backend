@@ -4,6 +4,17 @@ import httpStatus from "http-status";
 import { paginationHelper } from "../../helper/paginationHelper";
 import { CreateTravelPlanPayload, SearchQuery } from "./travelPlan.types";
 
+const getPendingTravelPlans = async () => {
+  const data = await prisma.travelPlan.findMany({
+    where: {
+      isPublished: false,
+    },
+  });
+
+  return data;
+};
+
+
 const getPublicTravelPlans = async (filters: any, options: any) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
@@ -154,7 +165,6 @@ const createTravelPlan = async (
   userId: number,
   payload: CreateTravelPlanPayload
 ) => {
-  // 1️⃣ Host check
   const host = await prisma.host.findUnique({
     where: { userId },
   });
@@ -168,13 +178,15 @@ const createTravelPlan = async (
 
   const travelPlan = await prisma.travelPlan.create({
     data: {
+      title: payload.title,
       destination: payload.destination,
       startDate: new Date(payload.startDate),
       endDate: new Date(payload.endDate),
-      budget: payload.budget,
+      budget: Number(payload.budget),
+      capacity: Number(payload.capacity),
+      photoURL: payload.photoURL || "",
       travelType: payload.travelType,
       description: payload.description,
-      capacity: Number(payload.capacity),
       hostId: host.id,
     },
   });
@@ -394,6 +406,7 @@ const togglePublish = async (userId: number, planId: number) => {
 };
 
 export const travelPlanService = {
+  getPendingTravelPlans,
   createTravelPlan,
   publishTravelPlan,
   togglePublish,

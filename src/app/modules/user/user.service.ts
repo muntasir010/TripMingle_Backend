@@ -243,6 +243,24 @@ const deleteUser = async (id: number) => {
 };
 
 
+const getMyProfile = async (reqUser: any) => {
+  const { userId, email } = reqUser;
+  const user = await prisma.user.findFirst({ 
+    where: {
+      OR: [{ id: userId }, { email: email }]
+    }
+  })
+
+  
+  if (!user) {
+    throw new Error("User not found!");
+  }
+
+  return user;
+};
+
+
+
 export const UserService = {
   createTourist,
   createHost,
@@ -250,5 +268,6 @@ export const UserService = {
   getAllFromDB,
   getSingleUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  getMyProfile
 };
