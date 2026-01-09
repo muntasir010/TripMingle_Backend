@@ -20,17 +20,17 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    secure: false,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    // secure: false,
+    sameSite: "none",
+    maxAge: 2 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    secure: false,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    // secure: false,
+    sameSite: "none",
     maxAge: 60 * 24 * 60 * 60 * 1000,
   });
 
@@ -72,8 +72,8 @@ export const switchAccountRole = async (req: Request & { user?: any }, res: Resp
   // 4️⃣ Overwrite cookie
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false, // production এ true
-    sameSite: "lax",
+    secure: true, 
+    sameSite: "none",
   });
 
   res.status(httpStatus.OK).json({
