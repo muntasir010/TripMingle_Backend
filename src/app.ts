@@ -8,23 +8,24 @@ import globalErrorHandler from "./app/middleware/globalErrorHandler";
 import path from "path";
 
 const app: Application = express();
+app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", config.frontend_url],
+    origin: ["http://localhost:3000", process.env.FRONTEND_URL || config.frontend_url],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
   })
 );
 
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
+app.options('*', cors());
+
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/v1", router);
 app.disable("etag");
 
