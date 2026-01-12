@@ -1,8 +1,8 @@
 import { Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
-import { TravelRequestService } from "./travelRequest.service";
 import pick from "../../helper/pick";
+import { JoinTripRequest } from "./joinTripRequest.service";
 
 const getMyRequests = catchAsync(async (req: any, res: Response) => {
   const filters = pick(req.query, ["status"]);
@@ -13,7 +13,7 @@ const getMyRequests = catchAsync(async (req: any, res: Response) => {
     "sortOrder",
   ]);
 
-  const result = await TravelRequestService.getMyRequests(
+  const result = await JoinTripRequest.getMyRequests(
     req.user.userId,
     filters,
     paginationOptions
@@ -29,14 +29,18 @@ const getMyRequests = catchAsync(async (req: any, res: Response) => {
 });
 
 const getHostRequests = catchAsync(async (req: any, res: Response) => {
-    const filters = pick(req.query, ["status"]);
+  const filters = pick(req.query, ["status"]);
   const paginationOptions = pick(req.query, [
     "page",
     "limit",
     "sortBy",
     "sortOrder",
   ]);
-  const result = await TravelRequestService.getRequestsForHost(req.user.userId, filters, paginationOptions);
+  const result = await JoinTripRequest.getRequestsForHost(
+    req.user.userId,
+    filters,
+    paginationOptions
+  );
 
   sendResponse(res, {
     statusCode: 200,
@@ -47,21 +51,21 @@ const getHostRequests = catchAsync(async (req: any, res: Response) => {
 });
 
 const sendRequest = catchAsync(async (req, res) => {
-  const result = await TravelRequestService.sendRequest(
+  const result = await JoinTripRequest.sendRequest(
     req.user.userId,
-    req.body.travelPlanId
+    Number(req.body.travelPlanId)
   );
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "Tour request sent successfully",
+    message: "Trip joined successfully",
     data: result,
   });
 });
 
 const approveRequest = catchAsync(async (req: any, res: Response) => {
-  const result = await TravelRequestService.updateRequestStatus(
+  const result = await JoinTripRequest.updateRequestStatus(
     req.user.userId,
     Number(req.params.id),
     "ACCEPTED"
@@ -76,7 +80,7 @@ const approveRequest = catchAsync(async (req: any, res: Response) => {
 });
 
 const rejectRequest = catchAsync(async (req: any, res: Response) => {
-  const result = await TravelRequestService.updateRequestStatus(
+  const result = await JoinTripRequest.updateRequestStatus(
     req.user.userId,
     Number(req.params.id),
     "REJECTED"
@@ -90,7 +94,7 @@ const rejectRequest = catchAsync(async (req: any, res: Response) => {
   });
 });
 
-export const TravelRequestController = {
+export const JoinTripRequestController = {
   getMyRequests,
   getHostRequests,
   sendRequest,

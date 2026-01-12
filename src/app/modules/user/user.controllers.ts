@@ -26,7 +26,7 @@ const createAdmin = catchAsync(async (req, res) => {
     req.body = JSON.parse(req.body.data);
   }
   const result = await UserService.createAdmin(req);
-console.log("BODY:", req.body, result);
+
 
   sendResponse(res, {
     statusCode: 201,
@@ -54,9 +54,8 @@ const createHost = catchAsync(async (req, res) => {
 });
 
 const createTourist = catchAsync(async (req, res) => {
-    console.log("req.body", req.body);
   const result = await UserService.createTourist(req);
-  console.log("req.body", req.body);
+  
 
 
   sendResponse(res, {

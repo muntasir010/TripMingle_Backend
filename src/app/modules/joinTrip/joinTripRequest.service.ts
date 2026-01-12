@@ -139,65 +139,69 @@ const getRequestsForHost = async (
   };
 };
 
-const sendRequest = async (requesterId: number, travelPlanId: number) => {
-  // travel plan exists?
-  const travelPlan = await prisma.travelPlan.findUnique({
+const sendRequest = async (userId: number, travelPlanId: number) => {
+  const plan = await prisma.travelPlan.findUnique({
     where: { id: travelPlanId },
-  });
-
-  if (!travelPlan) {
-    throw new AppError(httpStatus.NOT_FOUND, "Travel plan not found");
-  }
-
-  const host = await prisma.host.findUnique({
-    where: { id: travelPlan.hostId },
-  });
-
-  if (host?.userId === requesterId) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "You cannot request your own travel plan"
-    );
-  }
-
-  // capacity check
-  const acceptedCount = await prisma.travelRequest.count({
-    where: {
-      travelPlanId,
-      status: "ACCEPTED",
+    include: {
+      trips: true,
     },
   });
 
-  if (travelPlan.capacity && acceptedCount >= travelPlan.capacity) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "This travel plan is already full"
-    );
+  if (!plan) throw new AppError(404, "Travel plan not found");
+
+  // ❌ Date validation
+  const now = new Date();
+  if (now > plan.startDate) {
+    throw new AppError(400, "Trip already started");
   }
 
-  // prevent duplicate request
-  const alreadyRequested = await prisma.travelRequest.findFirst({
+  // ❌ Capacity check
+  if (plan.trips.length >= plan.capacity) {
+    throw new AppError(400, "Trip is full");
+  }
+
+  // ❌ Already joined?
+  const already = await prisma.trip.findFirst({
     where: {
-      requesterId,
       travelPlanId,
+      touristId: userId,
     },
   });
 
-  if (alreadyRequested) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "You already requested this travel plan"
-    );
+  if (already) {
+    throw new AppError(400, "Already joined this trip");
   }
 
-  // create request
-  return prisma.travelRequest.create({
+  // 💳 Create Payment (mock)
+  const payment = await prisma.payment.create({
     data: {
-      requesterId,
-      travelPlanId,
-      status: RequestStatus.PENDING,
+      userId,
+      amount: plan.budget,
+      status: "PAID",
+      transactionId: `TXN-${Date.now()}-${userId}`,
     },
   });
+
+  //  Create Trip
+  const trip = await prisma.trip.create({
+    data: {
+      travelPlanId,
+      touristId: userId,
+      hostId: plan.hostId,
+      status: "UPCOMING",
+    },
+  });
+
+  // 🧾 Attach receipt
+  await prisma.payment.update({
+    where: { id: payment.id },
+    data: {
+      tripId: trip.id,
+      receiptUrl: `/receipts/trip-${trip.id}.pdf`,
+    },
+  });
+
+  return { trip, payment };
 };
 
 const updateRequestStatus = async (
@@ -235,7 +239,7 @@ const updateRequestStatus = async (
     );
   }
 
-   if (status === "ACCEPTED") {
+  if (status === "ACCEPTED") {
     const acceptedCount = await prisma.travelRequest.count({
       where: {
         travelPlanId: request.travelPlanId,
@@ -259,7 +263,7 @@ const updateRequestStatus = async (
   return updated;
 };
 
-export const TravelRequestService = {
+export const JoinTripRequest = {
   getMyRequests,
   sendRequest,
   getRequestsForHost,

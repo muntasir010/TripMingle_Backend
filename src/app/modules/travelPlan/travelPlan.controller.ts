@@ -26,7 +26,7 @@ const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
   const result = await travelPlanService.getPublicTravelPlans(
     filters,
     paginationOptions
-  );console.log(result)
+  );
 
 
   sendResponse(res, {

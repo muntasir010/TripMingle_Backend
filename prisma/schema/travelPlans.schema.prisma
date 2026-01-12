@@ -1,8 +1,7 @@
 enum TripStatus {
-  PENDING
-  CONFIRMED
+  UPCOMING
+  RUNNING
   COMPLETED
-  CANCELLED
 }
 
 model TravelPlan {
@@ -58,3 +57,5 @@ model Trip {
 
   @@map("trips")
 }
+
+

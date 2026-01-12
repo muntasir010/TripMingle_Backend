@@ -4,9 +4,9 @@ import { UserRoutes } from "../modules/user/user.routes";
 import { AuthRoutes } from "../modules/auth/auth.routes";
 import { profileRoutes } from "../modules/profile/profile.routes";
 import { travelPlansRoutes } from "../modules/travelPlan/travelPlan.routes";
-import { travelRequestRoutes } from "../modules/travelRequest/travelRequest.routes";
 import { HostRoutes } from "../modules/host/host.routes";
 import { PaymentsRoutes } from "../modules/payments/payments.routes";
+import { JoinTripRoutes } from '../modules/joinTrip/joinTripRequest.routes';
 
 const router = express.Router();
 
@@ -37,7 +37,7 @@ const moduleRoutes = [
   },
   {
     path: "/travel-request",
-    route: travelRequestRoutes,
+    route: JoinTripRoutes,
   },
   {
     path: "/payment",

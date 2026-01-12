@@ -22,7 +22,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     // secure: false,
-    sameSite: "none",
+    sameSite: "lax",
     maxAge: 2 * 24 * 60 * 60 * 1000,
   });
 
@@ -30,7 +30,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     // secure: false,
-    sameSite: "none",
+    sameSite: "lax",
     maxAge: 60 * 24 * 60 * 60 * 1000,
   });
 

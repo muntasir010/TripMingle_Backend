@@ -1,11 +1,13 @@
 model Payment {
-  id            Int      @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   userId        Int
-  amount        Int
-  transactionId String  @unique
+  amount        Float
+  transactionId String        @unique
   status        PaymentStatus
   planId        Int?
-  createdAt     DateTime @default(now())
+  tripId        Int?
+  receiptUrl    String?
+  createdAt     DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }

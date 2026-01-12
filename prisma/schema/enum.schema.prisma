@@ -42,6 +42,11 @@ enum HostApplicationStatus {
 
 enum PaymentStatus {
   PENDING
-  SUCCESS
+  PAID
   FAILED
+}
+
+enum JoinStatus {
+  PAID
+  CANCELLED
 }
