@@ -25,6 +25,10 @@ model TravelPlan {
   host          Host            @relation(fields: [hostId], references: [id])
   trips         Trip[]
 
+  totalCapacity Int
+  joinedCount   Int         @default(0)
+
+  status        PlanStatus  @default(PENDING)
   @@map("travel_plans")
 }
 

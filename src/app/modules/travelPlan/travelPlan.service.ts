@@ -3,6 +3,7 @@ import AppError from "../../../shared/AppError";
 import httpStatus from "http-status";
 import { paginationHelper } from "../../helper/paginationHelper";
 import { CreateTravelPlanPayload, SearchQuery } from "./travelPlan.types";
+import { getTripStatus } from "../../../utils/tripStatus";
 
 const getPendingTravelPlans = async () => {
   const data = await prisma.travelPlan.findMany({
@@ -25,8 +26,8 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
   if (filters.search) {
     andConditions.push({
       OR: [
-        { destination: { contains: filters.search, mode: "insensitive" } },
-        { description: { contains: filters.search, mode: "insensitive" } },
+        { destination: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
       ],
     });
   }
@@ -34,7 +35,7 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
   // 🎛 FILTERS
   if (filters.destination) {
     andConditions.push({
-      destination: { equals: filters.destination, mode: "insensitive" },
+      destination: { equals: filters.destination, mode: 'insensitive' },
     });
   }
 
@@ -58,7 +59,7 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
     });
   }
 
-  // ✅ Only upcoming tours
+  // ✅ Only not completed trips
   andConditions.push({
     endDate: { gte: new Date() },
   });
@@ -70,7 +71,7 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
     ],
   };
 
-  const data = await prisma.travelPlan.findMany({
+  const plans = await prisma.travelPlan.findMany({
     where: whereCondition,
     skip,
     take: limit,
@@ -93,13 +94,23 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
     },
   });
 
-  const total = await prisma.travelPlan.count({ where: whereCondition });
+  const total = await prisma.travelPlan.count({
+    where: whereCondition,
+  });
+
+  //  DERIVED DATA (NO DB FIELD)
+  const data = plans.map(plan => ({
+    ...plan,
+    tripStatus: getTripStatus(plan.startDate, plan.endDate),
+    remainingSeats: plan.totalCapacity - plan.joinedCount,
+  }));
 
   return {
     meta: { page, limit, total },
     data,
   };
 };
+
 
 const getSingleTravelPlan = async (id: number) => {
   const travelPlan = await prisma.travelPlan.findUnique({

@@ -7,6 +7,8 @@ import {
   travelPlanFilterableFields,
   travelPlanPaginationFields,
 } from "./travelPlan.constants";
+import { getTripStatus } from "../../../utils/tripStatus";
+import { prisma } from "../../../shared/prisma";
 
 const getPendingPlans = catchAsync(async (req, res) => {
   const result = await travelPlanService.getPendingTravelPlans();
@@ -19,7 +21,7 @@ const getPendingPlans = catchAsync(async (req, res) => {
   });
 });
 
-const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
+const getPublicPlans = catchAsync(async (req, res) => {
   const filters = pick(req.query, travelPlanFilterableFields);
   const paginationOptions = pick(req.query, travelPlanPaginationFields);
 
@@ -27,7 +29,6 @@ const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
     filters,
     paginationOptions
   );
-
 
   sendResponse(res, {
     statusCode: 200,
@@ -37,6 +38,7 @@ const getPublicPlans = catchAsync(async (req: Request, res: Response) => {
     data: result.data,
   });
 });
+
 
 const getSingleTravelPlan = catchAsync(async (req: Request, res: Response) => {
   const id = Number(req.params.id);

@@ -50,3 +50,9 @@ enum JoinStatus {
   PAID
   CANCELLED
 }
+
+enum PlanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
