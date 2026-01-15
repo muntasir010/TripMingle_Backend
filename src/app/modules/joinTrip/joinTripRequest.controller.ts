@@ -50,16 +50,19 @@ const getHostRequests = catchAsync(async (req: any, res: Response) => {
   });
 });
 
-const sendRequest = catchAsync(async (req, res) => {
+const joinTrip = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { travelPlanId } = req.body;
+
   const result = await JoinTripRequest.sendRequest(
-    req.user.userId,
-    Number(req.body.travelPlanId)
+    userId,
+    travelPlanId
   );
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "Trip joined successfully",
+    message: 'Trip join request created successfully',
     data: result,
   });
 });
@@ -68,7 +71,7 @@ const approveRequest = catchAsync(async (req: any, res: Response) => {
   const result = await JoinTripRequest.updateRequestStatus(
     req.user.userId,
     Number(req.params.id),
-    "ACCEPTED"
+    "CONFIRMED"
   );
 
   sendResponse(res, {
@@ -83,7 +86,7 @@ const rejectRequest = catchAsync(async (req: any, res: Response) => {
   const result = await JoinTripRequest.updateRequestStatus(
     req.user.userId,
     Number(req.params.id),
-    "REJECTED"
+    "CANCELLED"
   );
 
   sendResponse(res, {
@@ -94,10 +97,24 @@ const rejectRequest = catchAsync(async (req: any, res: Response) => {
   });
 });
 
+const confirmJoin = catchAsync(async (req, res) => {
+  const { requestId } = req.body;
+
+  const result = await JoinTripRequest.confirmJoin(requestId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Trip booking confirmed successfully',
+    data: result,
+  });
+});
+
 export const JoinTripRequestController = {
   getMyRequests,
   getHostRequests,
-  sendRequest,
+  joinTrip,
   approveRequest,
   rejectRequest,
+  confirmJoin,
 };

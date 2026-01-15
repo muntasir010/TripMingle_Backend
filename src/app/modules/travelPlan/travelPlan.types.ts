@@ -10,6 +10,8 @@ export type CreateTravelPlanPayload = {
   travelType: TravelType;
   description?: string;
   capacity: number;
+  totalCapacity: number;
+  joinedCount: number;
 };
 export type SearchQuery = {
   destination?: string;

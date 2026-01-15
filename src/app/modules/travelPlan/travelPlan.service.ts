@@ -198,6 +198,8 @@ const createTravelPlan = async (
       photoURL: payload.photoURL || "",
       travelType: payload.travelType,
       description: payload.description,
+      totalCapacity: payload.totalCapacity,
+      joinedCount: payload.joinedCount,
       hostId: host.id,
     },
   });

@@ -204,6 +204,37 @@ const sendRequest = async (userId: number, travelPlanId: number) => {
   return { trip, payment };
 };
 
+const confirmJoin = async (requestId: number) => {
+  const request = await prisma.travelRequest.findUnique({
+    where: { id: requestId },
+    include: { travelPlan: true },
+  });
+
+  if (!request || request.status !== 'PENDING') {
+    throw new AppError(400, 'Invalid request');
+  }
+
+  await prisma.travelRequest.update({
+    where: { id: requestId },
+    data: { status: 'CONFIRMED' },
+  });
+
+  await prisma.travelPlan.update({
+    where: { id: request.travelPlanId },
+    data: {
+      joinedCount: { increment: 1 },
+    },
+  });
+};
+
+const cancelBooking = async (requestId: number) => {
+  await prisma.travelRequest.update({
+    where: { id: requestId },
+    data: { status: 'CANCELLED' },
+  });
+};
+
+
 const updateRequestStatus = async (
   hostUserId: number,
   requestId: number,
@@ -239,11 +270,11 @@ const updateRequestStatus = async (
     );
   }
 
-  if (status === "ACCEPTED") {
+  if (status === "CONFIRMED") {
     const acceptedCount = await prisma.travelRequest.count({
       where: {
         travelPlanId: request.travelPlanId,
-        status: "ACCEPTED",
+        status: "CONFIRMED",
       },
     });
 
@@ -268,4 +299,6 @@ export const JoinTripRequest = {
   sendRequest,
   getRequestsForHost,
   updateRequestStatus,
+  confirmJoin,
+  cancelBooking,
 };

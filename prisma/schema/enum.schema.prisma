@@ -24,8 +24,8 @@ enum Gender {
 
 enum RequestStatus {
   PENDING
-  ACCEPTED
-  REJECTED
+  CONFIRMED
+  CANCELLED
 }
 
 enum TravelType {
