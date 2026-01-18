@@ -15,7 +15,6 @@ const getPendingTravelPlans = async () => {
   return data;
 };
 
-
 const getPublicTravelPlans = async (filters: any, options: any) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
@@ -26,8 +25,8 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
   if (filters.search) {
     andConditions.push({
       OR: [
-        { destination: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
+        { destination: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
       ],
     });
   }
@@ -35,7 +34,7 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
   // 🎛 FILTERS
   if (filters.destination) {
     andConditions.push({
-      destination: { equals: filters.destination, mode: 'insensitive' },
+      destination: { equals: filters.destination, mode: "insensitive" },
     });
   }
 
@@ -99,7 +98,7 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
   });
 
   //  DERIVED DATA (NO DB FIELD)
-  const data = plans.map(plan => ({
+  const data = plans.map((plan) => ({
     ...plan,
     tripStatus: getTripStatus(plan.startDate, plan.endDate),
     remainingSeats: plan.totalCapacity - plan.joinedCount,
@@ -110,7 +109,6 @@ const getPublicTravelPlans = async (filters: any, options: any) => {
     data,
   };
 };
-
 
 const getSingleTravelPlan = async (id: number) => {
   const travelPlan = await prisma.travelPlan.findUnique({
@@ -195,17 +193,19 @@ const createTravelPlan = async (
       endDate: new Date(payload.endDate),
       budget: Number(payload.budget),
       capacity: Number(payload.capacity),
-      photoURL: payload.photoURL || "",
+      totalCapacity: Number(payload.capacity),
+      joinedCount: 0,
       travelType: payload.travelType,
       description: payload.description,
-      totalCapacity: payload.totalCapacity,
-      joinedCount: payload.joinedCount,
+      photoURL: payload.photoURL || "",
       hostId: host.id,
+      isPublished: false,
     },
   });
 
   return travelPlan;
 };
+
 
 const publishTravelPlan = async (adminUserId: number, travelPlanId: number) => {
   // 1️⃣ check admin
@@ -265,10 +265,7 @@ const updateTravelPlan = async (
 
   // block edit if published
   if (travelPlan.isPublished) {
-    throw new AppError(
-      400,
-      "Published travel plan cannot be updated"
-    );
+    throw new AppError(400, "Published travel plan cannot be updated");
   }
 
   // ownership check
@@ -305,10 +302,7 @@ const deleteTravelPlan = async (id: number, hostUserId: number) => {
   }
   // stop delete if published
   if (travelPlan.isPublished) {
-    throw new AppError(
-      400,
-      "Published travel plan cannot be deleted"
-    );
+    throw new AppError(400, "Published travel plan cannot be deleted");
   }
 
   // ownership check
@@ -344,9 +338,7 @@ const searchTravelPlans = async (query: SearchQuery) => {
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  const andConditions: any[] = [
-    { isPublished: true },
-  ];
+  const andConditions: any[] = [{ isPublished: true }];
 
   // 🔍 Destination search
   if (destination) {

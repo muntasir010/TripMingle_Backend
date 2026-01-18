@@ -51,8 +51,8 @@ const getHostRequests = catchAsync(async (req: any, res: Response) => {
 });
 
 const joinTrip = catchAsync(async (req, res) => {
-  const userId = req.user.id;
-  const { travelPlanId } = req.body;
+  const userId = req.user.userId;
+  const travelPlanId = Number(req.params.planId);
 
   const result = await JoinTripRequest.sendRequest(
     userId,
@@ -62,7 +62,7 @@ const joinTrip = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: 'Trip join request created successfully',
+    message: "Join request sent successfully",
     data: result,
   });
 });

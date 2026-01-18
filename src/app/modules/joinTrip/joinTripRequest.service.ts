@@ -7,7 +7,7 @@ import { paginationHelper } from "../../helper/paginationHelper";
 const getMyRequests = async (
   requesterId: number,
   filters: any,
-  options: any
+  options: any,
 ) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
@@ -69,7 +69,7 @@ const getMyRequests = async (
 const getRequestsForHost = async (
   hostUserId: number,
   filters: any,
-  options: any
+  options: any,
 ) => {
   const host = await prisma.host.findUnique({
     where: { userId: hostUserId },
@@ -140,68 +140,40 @@ const getRequestsForHost = async (
 };
 
 const sendRequest = async (userId: number, travelPlanId: number) => {
-  const plan = await prisma.travelPlan.findUnique({
-    where: { id: travelPlanId },
-    include: {
-      trips: true,
-    },
-  });
-
-  if (!plan) throw new AppError(404, "Travel plan not found");
-
-  // ❌ Date validation
-  const now = new Date();
-  if (now > plan.startDate) {
-    throw new AppError(400, "Trip already started");
+  if (!travelPlanId) {
+    throw new AppError(400, "Invalid travel plan id");
   }
 
-  // ❌ Capacity check
-  if (plan.trips.length >= plan.capacity) {
+  const plan = await prisma.travelPlan.findUnique({
+    where: { id: travelPlanId },
+  });
+
+  if (!plan) {
+    throw new AppError(404, "Travel plan not found");
+  }
+
+  if (plan.joinedCount >= plan.totalCapacity) {
     throw new AppError(400, "Trip is full");
   }
 
-  // ❌ Already joined?
-  const already = await prisma.trip.findFirst({
+  const existing = await prisma.travelRequest.findFirst({
     where: {
+      requesterId: userId,
       travelPlanId,
-      touristId: userId,
     },
   });
 
-  if (already) {
-    throw new AppError(400, "Already joined this trip");
+  if (existing) {
+    throw new AppError(400, "Already requested");
   }
 
-  // 💳 Create Payment (mock)
-  const payment = await prisma.payment.create({
+  return prisma.travelRequest.create({
     data: {
-      userId,
-      amount: plan.budget,
-      status: "PAID",
-      transactionId: `TXN-${Date.now()}-${userId}`,
-    },
-  });
-
-  //  Create Trip
-  const trip = await prisma.trip.create({
-    data: {
+      requesterId: userId,
       travelPlanId,
-      touristId: userId,
-      hostId: plan.hostId,
-      status: "UPCOMING",
+      status: "PENDING",
     },
   });
-
-  // 🧾 Attach receipt
-  await prisma.payment.update({
-    where: { id: payment.id },
-    data: {
-      tripId: trip.id,
-      receiptUrl: `/receipts/trip-${trip.id}.pdf`,
-    },
-  });
-
-  return { trip, payment };
 };
 
 const confirmJoin = async (requestId: number) => {
@@ -210,13 +182,13 @@ const confirmJoin = async (requestId: number) => {
     include: { travelPlan: true },
   });
 
-  if (!request || request.status !== 'PENDING') {
-    throw new AppError(400, 'Invalid request');
+  if (!request || request.status !== "PENDING") {
+    throw new AppError(400, "Invalid request");
   }
 
   await prisma.travelRequest.update({
     where: { id: requestId },
-    data: { status: 'CONFIRMED' },
+    data: { status: "CONFIRMED" },
   });
 
   await prisma.travelPlan.update({
@@ -230,15 +202,14 @@ const confirmJoin = async (requestId: number) => {
 const cancelBooking = async (requestId: number) => {
   await prisma.travelRequest.update({
     where: { id: requestId },
-    data: { status: 'CANCELLED' },
+    data: { status: "CANCELLED" },
   });
 };
-
 
 const updateRequestStatus = async (
   hostUserId: number,
   requestId: number,
-  status: RequestStatus
+  status: RequestStatus,
 ) => {
   const host = await prisma.host.findUnique({
     where: { userId: hostUserId },
@@ -266,7 +237,7 @@ const updateRequestStatus = async (
   if (request.status !== "PENDING") {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `Request already ${request.status}`
+      `Request already ${request.status}`,
     );
   }
 
@@ -281,7 +252,7 @@ const updateRequestStatus = async (
     if (acceptedCount >= request.travelPlan.capacity) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        "Travel plan capacity is full"
+        "Travel plan capacity is full",
       );
     }
   }

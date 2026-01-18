@@ -25,7 +25,20 @@ router.patch(
 router.post(
   "/send",
   auth("TOURIST", "HOST"),
-  JoinTripRequestController.sendRequest
+  JoinTripRequestController.joinTrip
 );
+
+router.post(
+  '/:planId/join',
+  auth("TOURIST"),
+  JoinTripRequestController.joinTrip
+);
+
+router.post(
+  '/confirm',
+  auth("ADMIN"),
+  JoinTripRequestController.confirmJoin
+);
+
 
 export const JoinTripRoutes = router;

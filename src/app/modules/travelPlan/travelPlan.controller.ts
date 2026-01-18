@@ -7,8 +7,6 @@ import {
   travelPlanFilterableFields,
   travelPlanPaginationFields,
 } from "./travelPlan.constants";
-import { getTripStatus } from "../../../utils/tripStatus";
-import { prisma } from "../../../shared/prisma";
 
 const getPendingPlans = catchAsync(async (req, res) => {
   const result = await travelPlanService.getPendingTravelPlans();
@@ -39,7 +37,6 @@ const getPublicPlans = catchAsync(async (req, res) => {
   });
 });
 
-
 const getSingleTravelPlan = catchAsync(async (req: Request, res: Response) => {
   const id = Number(req.params.id);
 
@@ -54,15 +51,29 @@ const getSingleTravelPlan = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createTravelPlan = catchAsync(
-  async (req: Request & { user?: any }, res: Response, error) => {
-    const file = req.file as any;
-    if (file && file.filename) {
-      req.body.photoURL = `/uploads/${file.filename}`;
+  async (req: Request & { user?: any }, res: Response) => {
+
+    if (req.file) {
+      req.body.photoURL = req.file.path;
     }
+
+    const payload = {
+      title: req.body.title,
+      destination: req.body.destination,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      budget: req.body.budget,
+      capacity: req.body.capacity,
+      travelType: req.body.travelType,
+      description: req.body.description,
+      photoURL: req.body.photoURL,
+    };
+
     const result = await travelPlanService.createTravelPlan(
-      req.user.userId,
-      req.body
+      req.user!.userId,
+      payload
     );
+
     sendResponse(res, {
       statusCode: 201,
       success: true,
