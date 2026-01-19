@@ -25,7 +25,6 @@ model User {
   hostApplications     HostApplication?
   host                 Host?
   tourist              Tourist?
-  payments             Payment[]
 
   @@map("users")
 }

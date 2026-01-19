@@ -1,99 +1,147 @@
 // @ts-ignore
-import SSLCommerzPayment from "sslcommerz-lts";
 import prisma from "../../../shared/prisma";
-import config from "../../../config";
+import AppError from "../../../shared/AppError";
+import { sslcommerz } from "../../../config/sslcommerz";
 
-const store_id = config.ssl_store_id;
-const store_passwd = config.ssl_store_pass;
-const is_live = false;
-
-const initSubscriptionPayment = async (
+const initiatePayment = async (
   userId: number,
-  planId: number
+  travelPlanId: number,
+  seats: number,
 ) => {
-  const plan = await prisma.subscriptionPlan.findUnique({
-    where: { id: planId },
+  const plan = await prisma.travelPlan.findUnique({
+    where: { id: travelPlanId },
   });
 
-  if (!plan) {
-    throw new Error("Invalid plan");
+  if (!plan) throw new AppError(404, "Trip not found");
+
+  if (plan.totalCapacity < seats) {
+    throw new AppError(400, "Not enough seats");
   }
 
-  const transactionId = `TXN-${Date.now()}`;
+  const pricePerSeat = Math.floor(plan.budget / plan.capacity);
+  const amount = pricePerSeat * seats;
 
-  await prisma.payment.create({
+  const payment = await prisma.payment.create({
     data: {
       userId,
-      amount: plan.price,
-      transactionId,
+      travelPlanId,
+      seats,
+      amount,
       status: "PENDING",
-      planId,
     },
   });
 
   const data = {
-    total_amount: plan.price,
+    total_amount: amount,
     currency: "BDT",
-    tran_id: transactionId,
-    success_url: `${config.backend_url}/payment/success`,
-    fail_url: `${config.backend_url}/payment/fail`,
-    cancel_url: `${config.backend_url}/payment/cancel`,
-    product_name: "Premium Subscription",
-    product_category: "Subscription",
-    cus_name: "User",
-    cus_email: "user@email.com",
-    cus_add1: "Bangladesh",
-    cus_city: "Dhaka",
-    cus_country: "Bangladesh",
+    tran_id: payment.id,
+    success_url: `${process.env.CLIENT_URL}/payment/success?pid=${payment.id}`,
+    fail_url: `${process.env.CLIENT_URL}/payment/fail`,
+    cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
+    product_name: plan.title,
+    product_category: "Travel",
+    product_profile: "general",
+    cus_name: "Tourist",
+    cus_email: "tourist@email.com",
   };
 
-  const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-  const apiResponse = await sslcz.init(data);
+  const response = await sslcommerz.init(data);
 
-  return apiResponse.GatewayPageURL;
+  return response.GatewayPageURL;
 };
 
-const paymentSuccess = async (tranId: string) => {
-  const payment = await prisma.payment.findUnique({
-    where: { transactionId: tranId },
-    include: { user: true, },
-  });
+const confirmPayment = async (paymentId: string) => {
+  return await prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId },
+    });
 
-  if (!payment) return;
+    if (!payment || payment.status === "PAID") {
+      throw new AppError(400, "Invalid payment");
+    }
 
-  const plan = await prisma.subscriptionPlan.findUnique({
-    where: { id: payment.planId! },
-  });
+    // 1️⃣ update payment
+    await tx.payment.update({
+      where: { id: paymentId },
+      data: { status: "PAID" },
+    });
 
-  const premiumUntil = new Date();
-  premiumUntil.setDate(premiumUntil.getDate() + plan!.duration);
-
-  await prisma.$transaction([
-    prisma.payment.update({
-      where: { transactionId: tranId },
-      data: { status: "SUCCESS" },
-    }),
-    prisma.user.update({
-      where: { id: payment.userId },
-      data: {
-        isPremium: true,
-        premiumUntil,
-        verifiedBadge: true,
+    // 2️⃣ confirm travel request
+    await tx.travelRequest.updateMany({
+      where: {
+        requesterId: payment.userId,
+        travelPlanId: payment.travelPlanId,
+        status: "PENDING",
       },
-    }),
-  ]);
-};
+      data: {
+        status: "CONFIRMED",
+        paymentId: payment.id,
+      },
+    });
 
-const paymentFail = async (tranId: string) => {
-  await prisma.payment.update({
-    where: { transactionId: tranId },
-    data: { status: "FAILED" },
+    // 3️⃣ update seat count
+    await tx.travelPlan.update({
+      where: { id: payment.travelPlanId },
+      data: {
+        totalCapacity: { decrement: payment.seats },
+        joinedCount: { increment: payment.seats },
+      },
+    });
+
+    return { success: true };
   });
 };
 
+const cancelBooking = async (userId: number, planId: number) => {
+  const plan = await prisma.travelPlan.findUnique({
+    where: { id: planId },
+  });
+
+  if (!plan) {
+    throw new AppError(404, "Travel plan not found");
+  }
+
+  const request = await prisma.travelRequest.findFirst({
+    where: {
+      requesterId: userId,
+      travelPlanId: planId,
+      status: "CONFIRMED",
+    },
+  });
+
+  if (!request) {
+    throw new AppError(400, "No confirmed booking found");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.travelRequest.update({
+      where: { id: request.id },
+      data: { status: "CANCELLED" },
+    });
+
+    await tx.travelPlan.update({
+      where: { id: planId },
+      data: {
+        joinedCount: {
+          decrement: request.seats,
+        },
+      },
+    });
+  });
+};
+
+const getAllPayments = async () => {
+  return prisma.payment.findMany({
+    include: {
+      travelPlan: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
 
 export const PaymentService = {
-    initSubscriptionPayment,
-    paymentSuccess,
-    paymentFail,
-}
+  initiatePayment,
+  confirmPayment,
+  cancelBooking,
+  getAllPayments,
+};

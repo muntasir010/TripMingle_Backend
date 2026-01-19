@@ -40,7 +40,7 @@ const moduleRoutes = [
     route: JoinTripRoutes,
   },
   {
-    path: "/payment",
+    path: "/payments",
     route: PaymentsRoutes,
   },
 ];

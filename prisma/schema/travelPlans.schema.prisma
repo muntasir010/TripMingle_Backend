@@ -18,6 +18,8 @@ model TravelPlan {
   updatedAt     DateTime        @updatedAt
   hostId        Int
   capacity      Int
+  totalCapacity Int
+  joinedCount   Int             @default(0)
   travelType    TravelType
   isPublished   Boolean         @default(false)
   reviews       Review[]
@@ -25,18 +27,20 @@ model TravelPlan {
   host          Host            @relation(fields: [hostId], references: [id])
   trips         Trip[]
 
-  totalCapacity Int
-  joinedCount   Int         @default(0)
+  status   PlanStatus @default(PENDING)
+  payments Payment[]
 
-  status        PlanStatus  @default(PENDING)
   @@map("travel_plans")
 }
 
 model TravelRequest {
   id           Int           @id @default(autoincrement())
-  travelPlanId Int
   requesterId  Int
+  travelPlanId Int
+  seats        Int
+  amount       Int @default(0)
   status       RequestStatus @default(PENDING)
+  paymentId    String?
   createdAt    DateTime      @default(now())
   requester    User          @relation(fields: [requesterId], references: [id])
   travelPlan   TravelPlan    @relation(fields: [travelPlanId], references: [id])
@@ -61,5 +65,3 @@ model Trip {
 
   @@map("trips")
 }
-
-

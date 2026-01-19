@@ -1,43 +1,54 @@
-import config from "../../../config";
 import catchAsync from "../../../shared/catchAsync";
-import prisma from "../../../shared/prisma";
+import sendResponse from "../../../shared/sendResponse";
 import { PaymentService } from "./payments.service";
 import { Request, Response } from "express";
 
-const subscribe = catchAsync(async (req, res) => {
-  const url = await PaymentService.initSubscriptionPayment(
-    req.user.userId,
-    req.body.planId
-  );
+const initiatePayment = catchAsync(
+  async (req: Request & { user?: any }, res: Response) => {
+    const { seats } = req.body;
+    const url = await PaymentService.initiatePayment(
+      req.user.userId,
+      Number(req.params.planId),
+      Number(seats),
+    );
 
-  res.json({ paymentUrl: url });
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Payment initiated successfully",
+      data: {
+        redirectURL: url,
+      },
+    });
+  },
+);
+
+const confirmPayment = catchAsync(async (req, res) => {
+  const paymentId = req.query.pid as string;
+
+  await PaymentService.confirmPayment(paymentId);
+
+  res.redirect(`${process.env.CLIENT_URL}/payment/success`);
 });
 
-const successPayment = catchAsync( async (req: Request, res: Response) => {
-  await PaymentService.paymentSuccess(req.query.tran_id as string);
-  res.redirect(config.frontend_url + "/payment-success");
-});
+const cancelBooking = catchAsync(
+  async (req: Request & { user?: any }, res: Response) => {
+    const userId = req.user.userId;
+    const planId = Number(req.params.planId);
 
-const failPayment = catchAsync(async (req: Request, res: Response) => {
-  const tranId = req.body.tran_id || req.query.tran_id;
-  await PaymentService.paymentFail(tranId);
-  res.redirect(config.frontend_url + "/payment-failed");
-});
+    await PaymentService.cancelBooking(userId, planId);
 
-const cancelPayment = async (req: Request, res: Response) => {
-  const tranId = req.body.tran_id || req.query.tran_id;
-
-  await prisma.payment.update({
-    where: { transactionId: tranId },
-    data: { status: "FAILED" },
-  });
-
-  res.redirect(config.frontend_url + "/payment-cancelled");
-};
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Booking cancelled successfully",
+      data: null,
+    });
+  },
+);
 
 export const PaymentController = {
-    subscribe,
-    successPayment,
-    failPayment,
-    cancelPayment,
-}
+  initiatePayment,
+  confirmPayment,
+  cancelBooking,
+};

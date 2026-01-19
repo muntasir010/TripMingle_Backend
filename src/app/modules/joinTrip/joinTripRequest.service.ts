@@ -172,6 +172,8 @@ const sendRequest = async (userId: number, travelPlanId: number) => {
       requesterId: userId,
       travelPlanId,
       status: "PENDING",
+      seats: Number(plan.capacity),
+      amount: Number(plan.budget),
     },
   });
 };

@@ -1,7 +1,0 @@
-model SubscriptionPlan {
-  id        Int      @id @default(autoincrement())
-  name      String  
-  price     Int
-  duration  Int
-  createdAt DateTime @default(now())
-}
