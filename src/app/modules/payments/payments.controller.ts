@@ -23,13 +23,17 @@ const initiatePayment = catchAsync(
   },
 );
 
-const confirmPayment = catchAsync(async (req, res) => {
-  const paymentId = req.query.pid as string;
+const confirmPayment = async (req: Request, res: Response) => {
+  // const paymentId = req.query.paymentId as string;
+   const paymentId = req.body.tran_id;
+console.log("Received payment confirmation for ID:", paymentId, req.body);
+  console.log("Payment ID from query:", paymentId); 
 
   await PaymentService.confirmPayment(paymentId);
 
   res.redirect(`${process.env.CLIENT_URL}/payment/success`);
-});
+};
+
 
 const cancelBooking = catchAsync(
   async (req: Request & { user?: any }, res: Response) => {

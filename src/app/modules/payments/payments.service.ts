@@ -51,46 +51,23 @@ const initiatePayment = async (
 };
 
 const confirmPayment = async (paymentId: string) => {
+  if (!paymentId) {
+    throw new Error("Payment ID is required");
+  }
+
   return await prisma.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({
       where: { id: paymentId },
     });
 
-    if (!payment || payment.status === "PAID") {
-      throw new AppError(400, "Invalid payment");
+    if (!payment) {
+      throw new Error("Payment not found");
     }
 
-    // 1️⃣ update payment
-    await tx.payment.update({
-      where: { id: paymentId },
-      data: { status: "PAID" },
-    });
-
-    // 2️⃣ confirm travel request
-    await tx.travelRequest.updateMany({
-      where: {
-        requesterId: payment.userId,
-        travelPlanId: payment.travelPlanId,
-        status: "PENDING",
-      },
-      data: {
-        status: "CONFIRMED",
-        paymentId: payment.id,
-      },
-    });
-
-    // 3️⃣ update seat count
-    await tx.travelPlan.update({
-      where: { id: payment.travelPlanId },
-      data: {
-        totalCapacity: { decrement: payment.seats },
-        joinedCount: { increment: payment.seats },
-      },
-    });
-
-    return { success: true };
+    return payment;
   });
 };
+
 
 const cancelBooking = async (userId: number, planId: number) => {
   const plan = await prisma.travelPlan.findUnique({
